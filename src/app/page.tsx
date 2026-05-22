@@ -2,11 +2,16 @@
 
 import { useMemo, useState } from 'react';
 import {
+  assessEventDate,
+  assessWayah,
+  BadDayWarning,
   calculatePetung,
   DAY_NEPTU,
   DAYS,
   DayName,
+  EventDateAssessment,
   findRecommendedEventDates,
+  hijriDateFromIsoDate,
   PASARAN,
   PASARAN_NEPTU,
   PasaranName,
@@ -14,6 +19,9 @@ import {
   PETUNG_4_SYSTEMS,
   Petung4Context,
   PetungResult,
+  QualityLevel,
+  WayahAssessment,
+  WayahPeriod,
   wetonFromIsoDate,
   WetonInput,
 } from '@/lib/petung';
@@ -149,6 +157,193 @@ function ResultCard({
   );
 }
 
+function formatJavaneseDate(assessment: EventDateAssessment): string {
+  const { javanese } = assessment;
+  return `${javanese.day} ${javanese.month} ${javanese.year} ${javanese.yearName}`;
+}
+
+function formatHijriDate(date: string): string {
+  const hijri = hijriDateFromIsoDate(date);
+  return `${hijri.day} ${hijri.month} ${hijri.year} ${hijri.era}`;
+}
+
+function formatMasehiDate(date: string): string {
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${date}T00:00:00Z`));
+}
+
+function WarningPill({ warning }: { warning: BadDayWarning }) {
+  return <span className={`warningPill ${warning.level}`}>{warning.name}</span>;
+}
+
+function WayahPill({ period }: { period: WayahPeriod }) {
+  return <span className={`warningPill ${period.level}`}>{period.name}</span>;
+}
+
+function formatLevel(level: QualityLevel): string {
+  if (level === 'baik') return 'baik';
+  if (level === 'hindari') return 'hindari';
+  if (level === 'waspada') return 'waspada';
+  return 'netral';
+}
+
+function WayahItem({ period }: { period: WayahPeriod }) {
+  return (
+    <article className={`warningItem ${period.level}`}>
+      <div>
+        <WayahPill period={period} />
+        <strong>
+          {period.source} · {period.range}
+        </strong>
+      </div>
+      <p>{period.description}</p>
+    </article>
+  );
+}
+
+function WayahAssessmentPanel({
+  assessment,
+  time,
+  onTimeChange,
+}: {
+  assessment: WayahAssessment;
+  time: string;
+  onTimeChange: (value: string) => void;
+}) {
+  return (
+    <section className={`panel wayahPanel ${assessment.overallLevel}`}>
+      <div className="panelHeader">
+        <div>
+          <p className="eyebrow">Wayah acara</p>
+          <h2>Cek Saat Lima & Sengkala Alam</h2>
+        </div>
+        <strong className={`statusBadge ${assessment.overallLevel}`}>{formatLevel(assessment.overallLevel)}</strong>
+      </div>
+
+      <div className="wayahGrid">
+        <div className="calendarSnapshotGrid">
+          <label className="field calendarSnapshot">
+            <span>Jam acara</span>
+            <input type="time" value={time} onChange={(event) => onTimeChange(event.target.value)} />
+          </label>
+          <div className="calendarSnapshot">
+            <span>Pasaran</span>
+            <strong>{assessment.pasaran}</strong>
+            <p>Dasar urutan Saat Lima</p>
+          </div>
+        </div>
+
+        <div className="warningList">
+          {assessment.saatLima ? (
+            <WayahItem period={assessment.saatLima} />
+          ) : (
+            <article className="warningItem netral">
+              <div>
+                <span className="warningPill netral">di luar Saat Lima</span>
+                <strong>18.00 - 06.00</strong>
+              </div>
+              <p>Malam hari tidak memakai siklus Saat Lima; ceknya mengikuti Sengkala Alam.</p>
+            </article>
+          )}
+
+          {assessment.alam.map((period) => (
+            <WayahItem key={period.id} period={period} />
+          ))}
+
+          {!assessment.saatLima && assessment.alam.length === 0 ? (
+            <article className="warningItem netral">
+              <div>
+                <span className="warningPill netral">netral</span>
+                <strong>Tidak masuk sengkala alam utama</strong>
+              </div>
+              <p>Jam ini tidak terkena Surup, Bedhug, Lingsir Wengi, atau Sepi Kirang.</p>
+            </article>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BadDayAssessmentPanel({
+  assessment,
+  canAssess,
+}: {
+  assessment: EventDateAssessment | null;
+  canAssess: boolean;
+}) {
+  return (
+    <section className={`panel badDayPanel ${assessment?.worstLevel ?? 'netral'}`}>
+      <div className="panelHeader">
+        <div>
+          <p className="eyebrow">Dina/tanggal kurang baik</p>
+          <h2>Cek 3 kalender & pantangan</h2>
+        </div>
+        {assessment ? (
+          <strong className={`statusBadge ${assessment.worstLevel}`}>{assessment.worstLevel}</strong>
+        ) : null}
+      </div>
+
+      {!canAssess ? (
+        <p className="emptyState">
+          Aktifkan pilihan tanggal Masehi pada Hari Acara untuk mengecek bulan Jawa, tanggal Jawa, dan wuku.
+        </p>
+      ) : assessment ? (
+        <div className="badDayGrid">
+          <div className="calendarSnapshotGrid">
+            <div className="calendarSnapshot">
+              <span>Masehi</span>
+              <strong>{formatMasehiDate(assessment.date)}</strong>
+              <p>
+                {assessment.weton.day} {assessment.weton.pasaran}
+              </p>
+            </div>
+            <div className="calendarSnapshot">
+              <span>Hijriah</span>
+              <strong>{formatHijriDate(assessment.date)}</strong>
+              <p>Kalender Hijriah</p>
+            </div>
+            <div className="calendarSnapshot">
+              <span>Jawa</span>
+              <strong>{formatJavaneseDate(assessment)}</strong>
+              <p>Wuku {assessment.javanese.wuku}</p>
+            </div>
+          </div>
+
+          <div className="warningList">
+            {assessment.warnings.length > 0 ? (
+              assessment.warnings.map((warning, index) => (
+                <article key={`${warning.id}-${index}`} className={`warningItem ${warning.level}`}>
+                  <div>
+                    <WarningPill warning={warning} />
+                    <strong>{warning.scope}</strong>
+                  </div>
+                  <p>{warning.description}</p>
+                </article>
+              ))
+            ) : (
+              <article className="warningItem baik">
+                <div>
+                  <span className="warningPill baik">bersih</span>
+                  <strong>Tidak terkena daftar pantangan</strong>
+                </div>
+                <p>
+                  Tanggal ini tidak masuk penanda sangar, bangas, suwung, taliwangke, samparwangke, atau
+                  daftar dina ala.
+                </p>
+              </article>
+            )}
+          </div>
+        </div>
+      ) : (
+        <p className="emptyState">Tanggal belum bisa dibaca. Periksa format tanggal acara.</p>
+      )}
+    </section>
+  );
+}
+
 function Petung4ResultTable({ context }: { context: Petung4Context }) {
   const system = PETUNG_4_SYSTEMS[context];
 
@@ -192,6 +387,7 @@ export default function Home() {
     dateStr: todayIso,
     manual: { day: 'Minggu', pasaran: 'Legi' },
   });
+  const [eventTime, setEventTime] = useState('10:00');
   const [startDate, setStartDate] = useState(todayIso);
   const [rangeDays, setRangeDays] = useState(120);
   const [petung4Context, setPetung4Context] = useState<Petung4Context>('salakiRabi');
@@ -199,11 +395,24 @@ export default function Home() {
   const maleWeton = useMemo(() => getActiveWeton(male), [male]);
   const femaleWeton = useMemo(() => getActiveWeton(female), [female]);
   const eventWeton = useMemo(() => getActiveWeton(eventConfig), [eventConfig]);
+  const wayahAssessment = useMemo(
+    () => assessWayah({ time: eventTime, pasaran: eventWeton.pasaran }),
+    [eventTime, eventWeton.pasaran],
+  );
 
   const calculation = useMemo(
     () => calculatePetung({ male: maleWeton, female: femaleWeton, event: eventWeton }),
     [maleWeton, femaleWeton, eventWeton],
   );
+  const eventAssessment = useMemo(() => {
+    if (!eventConfig.useDate) return null;
+
+    try {
+      return assessEventDate(eventConfig.dateStr);
+    } catch {
+      return null;
+    }
+  }, [eventConfig.dateStr, eventConfig.useDate]);
 
   const recommendations = useMemo(
     () =>
@@ -213,6 +422,7 @@ export default function Home() {
         startDate,
         rangeDays,
         targetRemainder5: 3,
+        avoidBadDays: true,
         limit: 12,
       }),
     [maleWeton, femaleWeton, rangeDays, startDate],
@@ -230,7 +440,7 @@ export default function Home() {
         <h1>Petung Hari Lamaran & Pernikahan</h1>
         <p>
           Hitung weton pasangan dan hari acara. Pembagi 4 dipisahkan antara pakem Salaki Rabi dan pakem
-          lelungan/golek hasil supaya urutan tibo tidak bercampur.
+          lelungan/golek hasil, lalu tanggal dan wayah acara dicek terhadap daftar pantangan.
         </p>
       </section>
 
@@ -245,6 +455,10 @@ export default function Home() {
         config={eventConfig}
         onChange={setEventConfig}
       />
+
+      <BadDayAssessmentPanel assessment={eventAssessment} canAssess={eventConfig.useDate} />
+
+      <WayahAssessmentPanel assessment={wayahAssessment} time={eventTime} onTimeChange={setEventTime} />
 
       <section className="summary panel">
         <h2>Ringkasan Hitungan</h2>
@@ -333,7 +547,7 @@ export default function Home() {
         <div className="panelHeader">
           <div>
             <p className="eyebrow">Pencari hari baik</p>
-            <h2>Rekomendasi tanggal sisa 3 / pembagi 5</h2>
+            <h2>Rekomendasi sisa 3 yang bersih pantangan</h2>
           </div>
         </div>
 
@@ -360,16 +574,25 @@ export default function Home() {
               <thead>
                 <tr>
                   <th>Tanggal</th>
+                  <th>Hijriah</th>
+                  <th>Tanggal Jawa</th>
                   <th>Weton acara</th>
                   <th>Neptu acara</th>
                   <th>Total z</th>
                   <th>Hasil</th>
+                  <th>Catatan</th>
                 </tr>
               </thead>
               <tbody>
                 {recommendations.map((item) => (
                   <tr key={item.date}>
                     <td>{item.date}</td>
+                    <td>
+                      {item.hijri.day} {item.hijri.month} {item.hijri.year} {item.hijri.era}
+                    </td>
+                    <td>
+                      {item.javanese.day} {item.javanese.month} {item.javanese.year}
+                    </td>
                     <td>
                       {item.event.day} {item.event.pasaran}
                     </td>
@@ -378,13 +601,18 @@ export default function Home() {
                     <td>
                       Sisa {item.result5.remainder} · {item.result5.meaning.name}
                     </td>
+                    <td>
+                      {item.badDayWarnings.length > 0
+                        ? item.badDayWarnings.map((warning) => warning.name).join(', ')
+                        : 'Bersih dari penanda kurang baik'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="emptyState">Belum ada tanggal yang masuk sisa 3 pada rentang ini.</p>
+          <p className="emptyState">Belum ada tanggal sisa 3 yang bersih dari penanda kurang baik pada rentang ini.</p>
         )}
       </section>
 
@@ -393,6 +621,8 @@ export default function Home() {
         <p>
           Pembagi 4 jodoh memakai Gentho, Gembili, Sri, Punggel dari neptu pasangan. Pembagi 4 hari,
           lelungan, atau golek hasil memakai Kliyeg/Riyeg, Mentheg/Menthek, Jotho, Kemil dari neptu hari.
+          Pantangan tanggal memakai tanggal Jawa Kurup Asapon dan dapat berbeda menurut pakem keluarga atau
+          daerah.
         </p>
       </section>
     </main>

@@ -436,62 +436,71 @@ export default function Home() {
   return (
     <main className="page">
       <section className="hero">
-        <p className="eyebrow">Preset Tulungagung / Jawa Mataraman</p>
-        <h1>Petung Hari Lamaran & Pernikahan</h1>
-        <p>
-          Hitung weton pasangan dan hari acara. Pembagi 4 dipisahkan antara pakem Salaki Rabi dan pakem
-          lelungan/golek hasil, lalu tanggal dan wayah acara dicek terhadap daftar pantangan.
-        </p>
-      </section>
-
-      <section className="inputGrid">
-        <WetonPicker title="Weton Laki-laki" config={male} onChange={setMale} />
-        <WetonPicker title="Weton Perempuan" config={female} onChange={setFemale} />
-      </section>
-
-      <WetonPicker
-        title="Hari Acara"
-        className="panel eventPanel"
-        config={eventConfig}
-        onChange={setEventConfig}
-      />
-
-      <BadDayAssessmentPanel assessment={eventAssessment} canAssess={eventConfig.useDate} />
-
-      <WayahAssessmentPanel assessment={wayahAssessment} time={eventTime} onTimeChange={setEventTime} />
-
-      <section className="summary panel">
-        <h2>Ringkasan Hitungan</h2>
-        <div className="formulaGrid">
-          <div>
-            <span>Neptu laki-laki</span>
-            <strong>{calculation.maleNeptu}</strong>
-          </div>
-          <div>
-            <span>Neptu perempuan</span>
-            <strong>{calculation.femaleNeptu}</strong>
-          </div>
-          <div>
-            <span>x = pasangan</span>
-            <strong>{calculation.coupleNeptu}</strong>
-          </div>
-          <div>
-            <span>y = hari acara</span>
-            <strong>{calculation.eventNeptu}</strong>
-          </div>
-          <div className="totalBox">
-            <span>z = x + y</span>
-            <strong>{calculation.totalNeptu}</strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="resultSection">
         <div>
-          <p className="eyebrow">Acuan hari acara</p>
-          <h2>Hasil utama pembagi 5</h2>
+          <p className="eyebrow">Preset Tulungagung / Jawa Mataraman</p>
+          <h1>Petung Hari Lamaran & Pernikahan</h1>
         </div>
-        {primaryEventResult ? <ResultCard result={primaryEventResult} primary /> : null}
+        <div className="heroSeal">
+          <span>{eventWeton.day}</span>
+          <strong>{eventWeton.pasaran}</strong>
+        </div>
+      </section>
+
+      <section className="workspaceGrid">
+        <div className="controlStack">
+          <section className="inputGrid">
+            <WetonPicker title="Weton Laki-laki" config={male} onChange={setMale} />
+            <WetonPicker title="Weton Perempuan" config={female} onChange={setFemale} />
+          </section>
+
+          <WetonPicker
+            title="Hari Acara"
+            className="panel eventPanel"
+            config={eventConfig}
+            onChange={setEventConfig}
+          />
+        </div>
+
+        <div className="insightStack">
+          <BadDayAssessmentPanel assessment={eventAssessment} canAssess={eventConfig.useDate} />
+          <WayahAssessmentPanel assessment={wayahAssessment} time={eventTime} onTimeChange={setEventTime} />
+        </div>
+      </section>
+
+      <section className="decisionGrid">
+        <section className="summary panel">
+          <h2>Ringkasan Hitungan</h2>
+          <div className="formulaGrid">
+            <div>
+              <span>Neptu laki-laki</span>
+              <strong>{calculation.maleNeptu}</strong>
+            </div>
+            <div>
+              <span>Neptu perempuan</span>
+              <strong>{calculation.femaleNeptu}</strong>
+            </div>
+            <div>
+              <span>x = pasangan</span>
+              <strong>{calculation.coupleNeptu}</strong>
+            </div>
+            <div>
+              <span>y = hari acara</span>
+              <strong>{calculation.eventNeptu}</strong>
+            </div>
+            <div className="totalBox">
+              <span>z = x + y</span>
+              <strong>{calculation.totalNeptu}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="resultSection">
+          <div>
+            <p className="eyebrow">Acuan hari acara</p>
+            <h2>Hasil utama pembagi 5</h2>
+          </div>
+          {primaryEventResult ? <ResultCard result={primaryEventResult} primary /> : null}
+        </section>
       </section>
 
       <section className="panel petung4Panel">

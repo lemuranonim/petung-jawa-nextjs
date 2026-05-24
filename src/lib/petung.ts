@@ -145,9 +145,9 @@ export type Petung4System = {
 };
 
 export const TIBO_3: Record<number, TiboMeaning> = {
-  1: { name: 'Begja / Bejo', level: 'baik', description: 'Dianggap membawa keberuntungan.' },
-  2: { name: 'Lara', level: 'waspada', description: 'Dianggap kurang nyaman, rawan kesusahan.' },
-  3: { name: 'Pati', level: 'hindari', description: 'Umumnya dihindari untuk hajat besar.' },
+  1: { name: 'Begja', level: 'baik', description: 'Baik menurut perhitungan suami istri No. 25 Betaljemur.' },
+  2: { name: 'Lara', level: 'hindari', description: 'Tidak baik menurut perhitungan suami istri No. 25 Betaljemur.' },
+  3: { name: 'Pati', level: 'hindari', description: 'Sangat jelek menurut perhitungan suami istri No. 25 Betaljemur.' },
 };
 
 export const PETUNG_4_SALAKI_RABI: Petung4System = {
@@ -331,6 +331,38 @@ export type BadDayWarning = {
   description: string;
 };
 
+export type EventRecommendationMode = 'temuKeluarga' | 'lamaran' | 'lamaranKetat' | 'akadNikah' | 'tarub';
+
+export type RecommendationReason = {
+  id: string;
+  name: string;
+  level: QualityLevel;
+  scope: string;
+  description: string;
+};
+
+export type AkadDayAdvice = {
+  occurrence: number;
+  options: RecommendationReason[];
+};
+
+export type TravelSlot = {
+  source: 'No.145' | 'No.146';
+  name: string;
+  range: string;
+  level: QualityLevel;
+  description: string;
+};
+
+export type TravelDepartureAssessment = {
+  weton: WetonInput;
+  neptu: number;
+  tibo: RecommendationReason;
+  kalaDirection: string;
+  slots145: TravelSlot[];
+  slots146Day: TravelSlot[];
+};
+
 export type EventDateAssessment = {
   date: string;
   weton: WetonInput;
@@ -375,6 +407,21 @@ const SANGARE_TANGGAL: Record<JavaneseMonthName, readonly number[]> = {
   Sawal: [2],
   Sela: [28],
   Besar: [],
+};
+
+const SANGARE_KEPERLUAN_PENTING_TANGGAL: Record<JavaneseMonthName, readonly number[]> = {
+  Suro: [17, 27, 11, 14],
+  Sapar: [12, 22, 1, 20],
+  Mulud: [13, 23, 10, 15],
+  'Bakda Mulud': [15, 25, 10, 20],
+  'Jumadil Awal': [16, 26, 10, 11],
+  'Jumadil Akhir': [11, 21, 3, 14],
+  Rejeb: [2, 22, 11, 21],
+  Ruwah: [14, 24, 19, 28],
+  Pasa: [15, 25, 10, 20],
+  Sawal: [17, 27, 2, 20],
+  Sela: [11, 21, 6, 12],
+  Besar: [13, 23, 1, 20],
 };
 
 const BANGAS_PADEWAN: Record<JavaneseMonthName, readonly number[]> = {
@@ -655,6 +702,284 @@ const KEJADIAN_NABI_DATES: Partial<Record<JavaneseMonthName, { day: number; even
   Besar: { day: 25, event: 'peristiwa Nabi Muhammad' },
 };
 
+const AKAD_DAY_GOOD_NAMES = new Set([
+  'Harja',
+  'Beruntung',
+  'Berbahagia',
+  'Tercapai maksudnya',
+  'Mendapat sahabat',
+  'Banyak senang',
+  'Mendapat kesenangan',
+  'Makmur',
+  'Senang',
+  'Minta dihormat',
+]);
+
+const AKAD_DAY_NEUTRAL_NAMES = new Set(['Mendapat sahabat', 'Minta dihormat', 'Sering dikerumungi orang']);
+
+const AKAD_DAY_TABLES: readonly Record<DayName, readonly string[]>[] = [
+  {
+    Jumat: ['Harja', 'Musuh Allah', 'Pati', 'Beruntung', 'Mendapat sahabat'],
+    Sabtu: ['Serba tak tercapai', 'Musuh Allah', 'Besar nafsunya', 'Harja', 'Beruntung'],
+    Minggu: ['Serba tak tercapai', 'Harja', 'Pati', 'Berbahagia', 'Berdosa besar'],
+    Senin: ['Musuh Allah', 'Harja', 'Sering mendapatkan hal yang tidak menyenangkan', 'Beruntung', 'Aral Melintang'],
+    Selasa: ['Serba tak tercapai', 'Musuh Allah', 'Berdosa besar', 'Harja', 'Aral Melintang'],
+    Rabu: ['Serba tak tercapai', 'Harja', 'Pati', 'Senang', 'Sering mendapatkan hal yang tidak menyenangkan'],
+    Kamis: ['Serba tak tercapai', 'Musuh Allah', 'Harja', 'Minta dihormat', 'Berdosa besar'],
+  },
+  {
+    Jumat: ['Harja', 'Musuh Allah', 'Pati', 'Tercapai maksudnya', 'Harja'],
+    Sabtu: ['Musuh Allah', 'Serba tak tercapai', 'Banyak senang', 'Beruntung', 'Harja'],
+    Minggu: ['Serba tak tercapai', 'Harja', 'Musuh Allah', 'Beruntung', 'Harja'],
+    Senin: ['Serba tak tercapai', 'Harja', 'Banyak senang', 'Musuh Allah', 'Mendapat kesenangan'],
+    Selasa: ['Serba tak tercapai', 'Banyak senang', 'Sering mendapatkan hal yang tidak menyenangkan', 'Harja', 'Makmur'],
+    Rabu: ['Banyak senang', 'Harja', 'Pati', 'Harja', 'Musuh Allah'],
+    Kamis: ['Serba tak tercapai', 'Musuh Allah', 'Harja', 'Mendapat sahabat', 'Pati'],
+  },
+  {
+    Jumat: ['Harja', 'Musuh Allah', 'Rintangan Besar', 'Pati', 'Harja'],
+    Sabtu: ['Musuh Allah', 'Serba tak tercapai', 'Murka', 'Harja', 'Harja'],
+    Minggu: ['Serba tak tercapai', 'Harja', 'Susah', 'Harja', 'Harja'],
+    Senin: ['Serba tak tercapai', 'Harja', 'Susah', 'Harja', 'Musuh Allah'],
+    Selasa: ['Musuh Allah', 'Serba tak tercapai', 'Sering mendapatkan hal yang tidak menyenangkan', 'Harja', 'Pati'],
+    Rabu: ['Kikir', 'Harja', 'Pati', 'Harja', 'Musuh Allah'],
+    Kamis: ['Serba tak tercapai', 'Musuh Allah', 'Harja', 'Sering dikerumungi orang', 'Musuh Allah'],
+  },
+];
+
+const TARUB_NEPTU_MEANINGS: Record<number, RecommendationReason> = {
+  7: {
+    id: 'tarub-neptu',
+    name: 'Aman tenteram',
+    level: 'baik',
+    scope: 'Neptu 7',
+    description: 'No.39: baik untuk memasang tarub.',
+  },
+  8: {
+    id: 'tarub-neptu',
+    name: 'Siluman pria',
+    level: 'hindari',
+    scope: 'Neptu 8',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+  9: {
+    id: 'tarub-neptu',
+    name: 'Dodok Atung',
+    level: 'hindari',
+    scope: 'Neptu 9',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+  10: {
+    id: 'tarub-neptu',
+    name: 'Temen dan Luhur',
+    level: 'baik',
+    scope: 'Neptu 10',
+    description: 'No.39: baik untuk memasang tarub.',
+  },
+  11: {
+    id: 'tarub-neptu',
+    name: 'Siluman wanita',
+    level: 'hindari',
+    scope: 'Neptu 11',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+  12: {
+    id: 'tarub-neptu',
+    name: 'Bencana',
+    level: 'hindari',
+    scope: 'Neptu 12',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+  13: {
+    id: 'tarub-neptu',
+    name: 'Aman tenteram',
+    level: 'baik',
+    scope: 'Neptu 13',
+    description: 'No.39: baik untuk memasang tarub.',
+  },
+  14: {
+    id: 'tarub-neptu',
+    name: 'Siluman pria',
+    level: 'hindari',
+    scope: 'Neptu 14',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+  15: {
+    id: 'tarub-neptu',
+    name: 'Dodok Atung',
+    level: 'hindari',
+    scope: 'Neptu 15',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+  16: {
+    id: 'tarub-neptu',
+    name: 'Temen dan Luhur',
+    level: 'baik',
+    scope: 'Neptu 16',
+    description: 'No.39: baik untuk memasang tarub.',
+  },
+  17: {
+    id: 'tarub-neptu',
+    name: 'Siluman wanita',
+    level: 'hindari',
+    scope: 'Neptu 17',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+  18: {
+    id: 'tarub-neptu',
+    name: 'Bencana',
+    level: 'hindari',
+    scope: 'Neptu 18',
+    description: 'No.39: tidak baik untuk memasang tarub.',
+  },
+};
+
+const TARUB_GOOD_DATES_NO40 = new Set([4, 9, 14, 19, 24, 29]);
+const TARUB_GOOD_DATES_NO41 = new Set([3, 4, 10, 11, 17, 18, 24, 25]);
+
+const TRAVEL_NO141: Record<number, { tibo: string; level: QualityLevel; kalaDirection: string; description: string }> = {
+  7: {
+    tibo: 'Watu',
+    level: 'waspada',
+    kalaDirection: 'Barat Daya',
+    description: 'Kurang utama untuk bepergian jauh menurut No.141.',
+  },
+  8: {
+    tibo: 'Gajah',
+    level: 'baik',
+    kalaDirection: 'Barat Daya',
+    description: 'Baik untuk bepergian jauh menurut No.141.',
+  },
+  9: {
+    tibo: 'Baya',
+    level: 'hindari',
+    kalaDirection: 'Barat Laut',
+    description: 'Tidak baik untuk bepergian jauh menurut No.141.',
+  },
+  10: {
+    tibo: 'Ratu',
+    level: 'baik',
+    kalaDirection: 'Timur Laut',
+    description: 'Baik untuk bepergian jauh menurut No.141.',
+  },
+  11: {
+    tibo: 'Suku',
+    level: 'waspada',
+    kalaDirection: 'Timur',
+    description: 'Kurang utama untuk bepergian jauh menurut No.141.',
+  },
+  12: {
+    tibo: 'Watu',
+    level: 'waspada',
+    kalaDirection: 'Tenggara',
+    description: 'Kurang utama untuk bepergian jauh menurut No.141.',
+  },
+  13: {
+    tibo: 'Gajah',
+    level: 'baik',
+    kalaDirection: 'Barat Daya',
+    description: 'Baik untuk bepergian jauh menurut No.141.',
+  },
+  14: {
+    tibo: 'Baya',
+    level: 'hindari',
+    kalaDirection: 'Barat Laut',
+    description: 'Tidak baik untuk bepergian jauh menurut No.141.',
+  },
+  15: {
+    tibo: 'Ratu',
+    level: 'baik',
+    kalaDirection: 'Timur',
+    description: 'Baik untuk bepergian jauh menurut No.141.',
+  },
+  16: {
+    tibo: 'Suku',
+    level: 'waspada',
+    kalaDirection: 'Timur',
+    description: 'Kurang utama untuk bepergian jauh menurut No.141.',
+  },
+  17: {
+    tibo: 'Watu',
+    level: 'waspada',
+    kalaDirection: 'Tenggara',
+    description: 'Kurang utama untuk bepergian jauh menurut No.141.',
+  },
+  18: {
+    tibo: 'Gajah',
+    level: 'baik',
+    kalaDirection: 'Barat Laut',
+    description: 'Baik untuk bepergian jauh menurut No.141.',
+  },
+};
+
+const TRAVEL_NO145_SLOTS: Record<number, readonly Omit<TravelSlot, 'source' | 'level'>[]> = {
+  7: [{ name: 'Lingsir kulon', range: '14.00 - 16.30', description: 'Saat baik No.145 untuk neptu 7.' }],
+  8: [
+    { name: 'Pagi', range: '06.00 - 08.00', description: 'Saat baik No.145 untuk neptu 8.' },
+    { name: 'Lingsir wetan', range: '08.00 - 10.00', description: 'Saat baik No.145 untuk neptu 8.' },
+    { name: 'Tengange', range: '11.00 - 12.00', description: 'Saat baik No.145 untuk neptu 8.' },
+  ],
+  9: [{ name: 'Tengange', range: '11.00 - 12.00', description: 'Saat baik No.145 untuk neptu 9.' }],
+  10: [
+    { name: 'Pagi', range: '06.00 - 08.00', description: 'Saat baik No.145 untuk neptu 10.' },
+    { name: 'Sore', range: '15.00 - 18.00', description: 'Saat baik No.145 untuk neptu 10.' },
+  ],
+  11: [
+    { name: 'Lingsir wetan', range: '08.00 - 10.00', description: 'Saat baik No.145 untuk neptu 11.' },
+    { name: 'Tengange', range: '11.00 - 12.00', description: 'Saat baik No.145 untuk neptu 11.' },
+  ],
+  12: [
+    { name: 'Pagi', range: '06.00 - 08.00', description: 'Saat baik No.145 untuk neptu 12.' },
+    { name: 'Sore', range: '15.00 - 18.00', description: 'Saat baik No.145 untuk neptu 12.' },
+  ],
+  13: [
+    { name: 'Pagi', range: '06.00 - 08.00', description: 'Saat baik No.145 untuk neptu 13.' },
+    { name: 'Tengange', range: '11.00 - 12.00', description: 'Saat baik No.145 untuk neptu 13.' },
+  ],
+  14: [
+    { name: 'Lingsir wetan', range: '08.00 - 10.00', description: 'Saat baik No.145 untuk neptu 14.' },
+    { name: 'Tengange', range: '11.00 - 12.00', description: 'Saat baik No.145 untuk neptu 14.' },
+  ],
+  15: [
+    { name: 'Pagi', range: '06.00 - 08.00', description: 'Saat baik No.145 untuk neptu 15.' },
+    { name: 'Sore', range: '15.00 - 18.00', description: 'Saat baik No.145 untuk neptu 15.' },
+  ],
+  16: [{ name: 'Lingsir wetan', range: '08.00 - 10.00', description: 'Saat baik No.145 untuk neptu 16.' }],
+  17: [
+    { name: 'Lingsir kulon', range: '14.00 - 16.30', description: 'Saat baik No.145 untuk neptu 17.' },
+    { name: 'Sore', range: '15.00 - 18.00', description: 'Saat baik No.145 untuk neptu 17.' },
+  ],
+  18: [
+    { name: 'Pagi', range: '06.00 - 08.00', description: 'Saat baik No.145 untuk neptu 18.' },
+    { name: 'Lingsir wetan', range: '08.00 - 10.00', description: 'Saat baik No.145 untuk neptu 18.' },
+  ],
+};
+
+const TRAVEL_NO146_DAY_TABLE: Record<number, readonly string[]> = {
+  7: ['Sampar', 'Srilungguh', 'Pacak', 'Pacak', 'Ayu'],
+  8: ['Sampar', 'Srilungguh', 'Kala penganten', 'Ayu', 'Ayu'],
+  9: ['Sampar', 'Ayu', 'Sampar', 'Kala penganten', 'Srigumelar'],
+  10: ['Sampar', 'Srilungguh', 'Srilungguh', 'Pacak', 'Ayu'],
+  11: ['Kalaluweng', 'Pacak', 'Ayu', 'Sampar', 'Srilungguh'],
+  12: ['Srigumelar', 'Kala penganten', 'Sampar', 'Ayu', 'Srilungguh'],
+  13: ['Pacak', 'Ayu', 'Sampar', 'Srilungguh', 'Srilungguh'],
+  14: ['Ayu', 'Sampar', 'Srilungguh', 'Srigumelar', 'Kala penganten'],
+  15: ['Ayu', 'Sampar', 'Srilungguh', 'Srigumelar', 'Pacak'],
+  16: ['Srigumelar', 'Ayu', 'Ayu', 'Sampar', 'Pacak'],
+  17: ['Ayu', 'Sampar', 'Kala penganten', 'Srigumelar', 'Srigumelar'],
+  18: ['Srigumelar', 'Pacak', 'Pacak', 'Ayu', 'Sampar'],
+};
+
+const TRAVEL_NO146_DAY_RANGES = [
+  { name: 'Pagi', range: '06.00 - 08.00' },
+  { name: 'Wisang garu', range: '08.00 - 11.00' },
+  { name: 'Bedug', range: '11.00 - 13.00' },
+  { name: 'Lingsir', range: '13.00 - 15.00' },
+  { name: 'Sore', range: '15.00 - 18.00' },
+] as const;
+
+const TRAVEL_GOOD_SLOT_NAMES = new Set(['Ayu', 'Srilungguh', 'Srigumelar']);
+
 const SAAT_LIMA_RANGES = [
   { start: 6 * 60, end: 8 * 60 + 24, label: '06.00 - 08.23' },
   { start: 8 * 60 + 24, end: 10 * 60 + 48, label: '08.24 - 10.47' },
@@ -801,6 +1126,26 @@ export type PetungCalculation = {
   coupleDayResult: CoupleDayResult;
 };
 
+export type BetaljemurBirthNeptuBreakdown = {
+  date: string;
+  weton: WetonInput;
+  javanese: JavaneseDateInfo;
+  dayNeptu: number;
+  pasaranNeptu: number;
+  monthNeptu: number;
+  dateNeptu: number;
+  yearNeptu: number;
+  totalNeptu: number;
+};
+
+export type BetaljemurMarriageRemainder3Calculation = {
+  male: BetaljemurBirthNeptuBreakdown;
+  female: BetaljemurBirthNeptuBreakdown;
+  totalNeptu: number;
+  result: PetungResult;
+  source: string;
+};
+
 export function wetonNeptu(input: WetonInput): number {
   return DAY_NEPTU[input.day] + PASARAN_NEPTU[input.pasaran];
 }
@@ -863,6 +1208,40 @@ export function resultForCoupleDays(maleDay: DayName, femaleDay: DayName): Coupl
   };
 }
 
+export function assessTravelDeparture(weton: WetonInput): TravelDepartureAssessment {
+  const neptu = wetonNeptu(weton);
+  const no141 = TRAVEL_NO141[neptu];
+  const slots145: TravelSlot[] = (TRAVEL_NO145_SLOTS[neptu] ?? []).map((slot) => ({
+    ...slot,
+    source: 'No.145',
+    level: 'baik',
+  }));
+  const slots146Day: TravelSlot[] = (TRAVEL_NO146_DAY_TABLE[neptu] ?? [])
+    .map((name, index) => ({
+      source: 'No.146' as const,
+      name,
+      range: TRAVEL_NO146_DAY_RANGES[index].range,
+      level: TRAVEL_GOOD_SLOT_NAMES.has(name) ? ('baik' as const) : ('hindari' as const),
+      description: `${TRAVEL_NO146_DAY_RANGES[index].name}: ${name}.`,
+    }))
+    .filter((slot) => slot.level === 'baik');
+
+  return {
+    weton,
+    neptu,
+    tibo: recommendationReason(
+      'lelungan-no141',
+      no141.tibo,
+      no141.level,
+      `Neptu ${neptu}`,
+      no141.description,
+    ),
+    kalaDirection: no141.kalaDirection,
+    slots145,
+    slots146Day,
+  };
+}
+
 export function calculatePetung(params: {
   male: WetonInput;
   female: WetonInput;
@@ -892,6 +1271,45 @@ export function calculatePetung(params: {
     ],
     coupleResult9: resultForCoupleRemainder9(maleNeptu, femaleNeptu),
     coupleDayResult: resultForCoupleDays(params.male.day, params.female.day),
+  };
+}
+
+function birthNeptuBreakdownFromIsoDate(date: string): BetaljemurBirthNeptuBreakdown {
+  const weton = wetonFromIsoDate(date);
+  const javanese = javaneseDateFromIsoDate(date);
+  const dayNeptu = DAY_NEPTU[weton.day];
+  const pasaranNeptu = PASARAN_NEPTU[weton.pasaran];
+  const monthNeptu = JAVANESE_MONTH_NEPTU[javanese.month];
+  const dateNeptu = javanese.day;
+  const yearNeptu = JAVANESE_YEAR_NEPTU[javanese.yearName];
+
+  return {
+    date,
+    weton,
+    javanese,
+    dayNeptu,
+    pasaranNeptu,
+    monthNeptu,
+    dateNeptu,
+    yearNeptu,
+    totalNeptu: dayNeptu + pasaranNeptu + monthNeptu + dateNeptu + yearNeptu,
+  };
+}
+
+export function calculateBetaljemurMarriageRemainder3(params: {
+  maleDate: string;
+  femaleDate: string;
+}): BetaljemurMarriageRemainder3Calculation {
+  const male = birthNeptuBreakdownFromIsoDate(params.maleDate);
+  const female = birthNeptuBreakdownFromIsoDate(params.femaleDate);
+  const totalNeptu = male.totalNeptu + female.totalNeptu;
+
+  return {
+    male,
+    female,
+    totalNeptu,
+    result: resultForTable(totalNeptu, 3, TIBO_3),
+    source: `${BETALJEMUR_SOURCE} No. 25`,
   };
 }
 
@@ -1194,6 +1612,22 @@ function warning(
   };
 }
 
+function recommendationReason(
+  id: string,
+  name: string,
+  level: QualityLevel,
+  scope: string,
+  description: string,
+): RecommendationReason {
+  return {
+    id,
+    name,
+    level,
+    scope,
+    description,
+  };
+}
+
 function monthAdvice(
   id: string,
   name: string,
@@ -1314,6 +1748,11 @@ export function assessEventDate(date: string): EventDateAssessment {
     }
   }
 
+  const sangarKeperluanPenting = getSangarKeperluanPentingWarning(javanese);
+  if (sangarKeperluanPenting) {
+    warnings.push(sangarKeperluanPenting);
+  }
+
   if (javanese.month === 'Besar' && (javanese.day === 29 || javanese.day === 30)) {
     const rule = KUNARPAWARSA_RULES[javanese.yearName];
     warnings.push(
@@ -1346,7 +1785,7 @@ export function assessEventDate(date: string): EventDateAssessment {
       warning(
         'kejadian-nabi',
         'Kejadian Nabi',
-        'waspada',
+        'hindari',
         `${javanese.day} ${javanese.month}`,
         `Tanggal ini masuk daftar peristiwa ${nabiDate.event} yang dihindari untuk hajat nikah.`,
       ),
@@ -1543,49 +1982,212 @@ export type RecommendedDate = {
   date: string;
   event: WetonInput;
   eventNeptu: number;
-  totalNeptu: number;
+  mode: EventRecommendationMode;
   javanese: JavaneseDateInfo;
   hijri: HijriDateInfo;
+  scoreLevel: QualityLevel;
+  reasons: RecommendationReason[];
   badDayWarnings: BadDayWarning[];
-  result5: PetungResult;
-  result8Couple: PetungResult;
+  akadDayAdvice: AkadDayAdvice | null;
+  bestSaatIjab: WayahPeriod | null;
+  travel: TravelDepartureAssessment;
 };
 
+function getSangarKeperluanPentingWarning(javanese: JavaneseDateInfo): BadDayWarning | null {
+  if (!includesCurrentJavaneseDate(SANGARE_KEPERLUAN_PENTING_TANGGAL, javanese)) return null;
+
+  return warning(
+    'sangar-keperluan-penting',
+    'Tanggal Sangar No.14',
+    'hindari',
+    `${javanese.day} ${javanese.month}`,
+    'Tanggal sangar untuk segala keperluan penting menurut No.14.',
+  );
+}
+
+function levelForAkadDayName(name: string): QualityLevel {
+  if (AKAD_DAY_GOOD_NAMES.has(name)) return 'baik';
+  if (AKAD_DAY_NEUTRAL_NAMES.has(name)) return 'netral';
+  return 'hindari';
+}
+
+export function assessAkadDay(date: string): AkadDayAdvice {
+  const weton = wetonFromIsoDate(date);
+  const javanese = javaneseDateFromIsoDate(date);
+  const occurrence = Math.min(Math.floor((javanese.day - 1) / 7) + 1, 5);
+
+  return {
+    occurrence,
+    options: AKAD_DAY_TABLES.map((table, index) => {
+      const name = table[weton.day][occurrence - 1];
+
+      return recommendationReason(
+        `akad-day-${index + 1}`,
+        `No.34 jenis ${index + 1}: ${name}`,
+        levelForAkadDayName(name),
+        `${weton.day} ke-${occurrence} bulan ${javanese.month}`,
+        'Penilaian hari akad berdasarkan urutan kemunculan hari dalam bulan Jawa.',
+      );
+    }),
+  };
+}
+
+function hasGoodAkadDay(advice: AkadDayAdvice): boolean {
+  return advice.options.some((option) => option.level === 'baik');
+}
+
+export function findBestSaatIjab(params: { pasaran: PasaranName; javaneseDay: number }): WayahPeriod | null {
+  const periods = SAAT_LIMA_RANGES.map((range) =>
+    getSaatIjabPeriod({
+      pasaran: params.pasaran,
+      javaneseDay: params.javaneseDay,
+      minuteOfDay: range.start,
+    }),
+  ).filter((period): period is WayahPeriod => period !== null && period.level === 'baik');
+
+  return periods.find((period) => period.name.includes('Slamet')) ?? periods[0] ?? null;
+}
+
+function getImportantNeedReasons(assessment: EventDateAssessment): RecommendationReason[] {
+  return assessment.monthAdvices
+    .filter((advice) => advice.id === 'betaljemur-bulan-rahayu' || advice.id === 'betaljemur-bulan-sarju')
+    .map((advice) =>
+      recommendationReason(advice.id, advice.name, advice.level, advice.scope, `${advice.description} (${advice.source})`),
+    );
+}
+
+function getMarriageMonthReasons(assessment: EventDateAssessment): RecommendationReason[] {
+  return assessment.monthAdvices
+    .filter(
+      (advice) =>
+        advice.level === 'baik' &&
+        (advice.id === 'betaljemur-month-character' ||
+          advice.id === 'betaljemur-good-month' ||
+          advice.id === 'betaljemur-bulan-rahayu'),
+    )
+    .map((advice) =>
+      recommendationReason(advice.id, advice.name, advice.level, advice.scope, `${advice.description} (${advice.source})`),
+    );
+}
+
+function getTarubReasons(assessment: EventDateAssessment): RecommendationReason[] {
+  const reasons: RecommendationReason[] = [];
+  const tarubNeptu = TARUB_NEPTU_MEANINGS[wetonNeptu(assessment.weton)];
+
+  if (tarubNeptu) reasons.push(tarubNeptu);
+
+  if (TARUB_GOOD_DATES_NO40.has(assessment.javanese.day)) {
+    reasons.push(
+      recommendationReason(
+        'tarub-date-no40',
+        'Tanggal tarub No.40',
+        'baik',
+        `${assessment.javanese.day} ${assessment.javanese.month}`,
+        'Masuk kelompok tanggal baik No.40: selamat dan banyak rezeki.',
+      ),
+    );
+  }
+
+  if (TARUB_GOOD_DATES_NO41.has(assessment.javanese.day)) {
+    reasons.push(
+      recommendationReason(
+        'tarub-date-no41',
+        'Tanggal tarub No.41',
+        'baik',
+        `${assessment.javanese.day} ${assessment.javanese.month}`,
+        'Masuk kelompok tanggal baik No.41: rahayu atau tenteram.',
+      ),
+    );
+  }
+
+  return reasons;
+}
+
+function recommendationWorstLevel(warnings: readonly BadDayWarning[], reasons: readonly RecommendationReason[]): QualityLevel {
+  if (warnings.some((item) => item.level === 'hindari') || reasons.some((item) => item.level === 'hindari')) {
+    return 'hindari';
+  }
+  if (warnings.length > 0 || reasons.some((item) => item.level === 'waspada')) return 'waspada';
+  if (reasons.some((item) => item.level === 'baik')) return 'baik';
+  return 'netral';
+}
+
 export function findRecommendedEventDates(params: {
-  male: WetonInput;
-  female: WetonInput;
   startDate: string;
   rangeDays: number;
-  targetRemainder5?: number;
-  avoidBadDays?: boolean;
+  mode?: EventRecommendationMode;
   limit?: number;
 }): RecommendedDate[] {
-  const target = params.targetRemainder5 ?? 3;
   const limit = params.limit ?? 20;
-  const avoidBadDays = params.avoidBadDays ?? true;
+  const mode = params.mode ?? 'akadNikah';
   const results: RecommendedDate[] = [];
 
   for (let index = 0; index < params.rangeDays; index += 1) {
     const date = addDaysIso(params.startDate, index);
-    const event = wetonFromIsoDate(date);
-    const calculation = calculatePetung({ male: params.male, female: params.female, event });
-    const result5 = calculation.eventResults.find((item) => item.divisor === 5);
     const assessment = assessEventDate(date);
-    const hijri = hijriDateFromIsoDate(date);
+    const no14Warning = getSangarKeperluanPentingWarning(assessment.javanese);
+    const importantReasons = getImportantNeedReasons(assessment);
+    const marriageMonthReasons = getMarriageMonthReasons(assessment);
+    const akadDayAdvice = assessAkadDay(date);
+    const goodAkadDayReasons = akadDayAdvice.options.filter((option) => option.level === 'baik');
+    const bestSaatIjab = findBestSaatIjab({
+      pasaran: assessment.weton.pasaran,
+      javaneseDay: assessment.javanese.day,
+    });
+    const travel = assessTravelDeparture(assessment.weton);
+    const tarubReasons = getTarubReasons(assessment);
+    const warnings = no14Warning ? [no14Warning] : [];
+    let reasons: RecommendationReason[] = [];
+    let include = false;
 
-    if (result5 && result5.remainder === target && (!avoidBadDays || assessment.warnings.length === 0)) {
-      results.push({
-        date,
-        event,
-        eventNeptu: calculation.eventNeptu,
-        totalNeptu: calculation.totalNeptu,
-        javanese: assessment.javanese,
-        hijri,
-        badDayWarnings: assessment.warnings,
-        result5,
-        result8Couple: calculation.coupleResult8,
-      });
+    if (mode === 'temuKeluarga' || mode === 'lamaran') {
+      reasons = importantReasons;
+      include = !no14Warning && reasons.length > 0;
+    } else if (mode === 'lamaranKetat') {
+      reasons = [...importantReasons, ...marriageMonthReasons, ...goodAkadDayReasons];
+      include = !no14Warning && assessment.warnings.length === 0 && importantReasons.length > 0 && hasGoodAkadDay(akadDayAdvice);
+    } else if (mode === 'tarub') {
+      reasons = tarubReasons;
+      include =
+        !no14Warning &&
+        tarubReasons.some((reason) => reason.id === 'tarub-neptu' && reason.level === 'baik') &&
+        tarubReasons.some((reason) => reason.id === 'tarub-date-no40' || reason.id === 'tarub-date-no41') &&
+        Boolean(bestSaatIjab);
+    } else {
+      reasons = [...marriageMonthReasons, ...goodAkadDayReasons];
+      if (bestSaatIjab) {
+        reasons.push(
+          recommendationReason(
+            'saat-ijab',
+            bestSaatIjab.name,
+            bestSaatIjab.level,
+            bestSaatIjab.range,
+            bestSaatIjab.description,
+          ),
+        );
+      }
+      include = assessment.warnings.length === 0 && marriageMonthReasons.length > 0 && hasGoodAkadDay(akadDayAdvice) && Boolean(bestSaatIjab);
     }
+
+    if (!include) continue;
+
+    const hijri = hijriDateFromIsoDate(date);
+    const badDayWarnings = [...warnings, ...(mode === 'temuKeluarga' || mode === 'lamaran' || mode === 'tarub' ? [] : assessment.warnings)];
+
+    results.push({
+      date,
+      event: assessment.weton,
+      eventNeptu: wetonNeptu(assessment.weton),
+      mode,
+      javanese: assessment.javanese,
+      hijri,
+      scoreLevel: recommendationWorstLevel(badDayWarnings, [...reasons, travel.tibo]),
+      reasons,
+      badDayWarnings,
+      akadDayAdvice: mode === 'akadNikah' || mode === 'lamaranKetat' ? akadDayAdvice : null,
+      bestSaatIjab,
+      travel,
+    });
 
     if (results.length >= limit) break;
   }

@@ -3,18 +3,22 @@
 import { useMemo, useState } from 'react';
 import {
   assessEventDate,
+  assessTravelDeparture,
   assessWayah,
   BadDayWarning,
   BETALJEMUR_COUPLE_REMAINDER_9,
   BETALJEMUR_DAY_PAIR_RESULTS,
   BETALJEMUR_SOURCE,
   BetaljemurMonthAdvice,
+  BetaljemurMarriageRemainder3Calculation,
   calculatePetung,
+  calculateBetaljemurMarriageRemainder3,
   CoupleDayResult,
   DAY_NEPTU,
   DAYS,
   DayName,
   EventDateAssessment,
+  EventRecommendationMode,
   findRecommendedEventDates,
   hijriDateFromIsoDate,
   PASARAN,
@@ -31,20 +35,32 @@ import {
   TIBO_7,
   TIBO_8_COUPLE,
   TiboMeaning,
+  TravelDepartureAssessment,
+  TravelSlot,
   WayahAssessment,
   WayahPeriod,
   wetonFromIsoDate,
   WetonInput,
 } from '@/lib/petung';
+import { SEO_PAGE_LINKS } from '@/lib/seo-pages';
 
 function getLocalIsoDate(date = new Date()): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+  }).formatToParts(date);
+  const valueFor = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
+
+  return `${valueFor('year')}-${valueFor('month')}-${valueFor('day')}`;
 }
 
 const todayIso = getLocalIsoDate();
+
+function isIsoDateString(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
 
 function SelectField<T extends string>({
   label,
@@ -86,6 +102,14 @@ const DETAIL_CONTEXTS: readonly { id: DetailContext; label: string }[] = [
   { id: 'pasangan8', label: 'Pasangan 8' },
   { id: 'pasangan9', label: 'Pasangan 9' },
   { id: 'hariLahir', label: 'Hari Lahir' },
+];
+
+const RECOMMENDATION_MODES: readonly { id: EventRecommendationMode; label: string }[] = [
+  { id: 'temuKeluarga', label: 'Temu keluarga' },
+  { id: 'lamaran', label: 'Lamaran' },
+  { id: 'lamaranKetat', label: 'Lamaran ketat' },
+  { id: 'akadNikah', label: 'Akad / nikah' },
+  { id: 'tarub', label: 'Tarub' },
 ];
 
 export function getActiveWeton(config: WetonConfig): WetonInput {
@@ -205,6 +229,42 @@ function CoupleDayResultCard({ result }: { result: CoupleDayResult }) {
       </div>
       <h3>{result.meaning.name}</h3>
       <p>{result.meaning.description}</p>
+    </article>
+  );
+}
+
+function BetaljemurRemainder3Card({
+  calculation,
+  primary = false,
+}: {
+  calculation: BetaljemurMarriageRemainder3Calculation | null;
+  primary?: boolean;
+}) {
+  if (!calculation) {
+    return (
+      <article className={`resultCard ${primary ? 'primary' : ''} netral`}>
+        <div className="resultTop">
+          <span>Bagi 3 Betaljemur No.25</span>
+          <strong>Butuh tanggal</strong>
+        </div>
+        <h3>Lengkapi tanggal lahir</h3>
+        <p>Hitungan No. 25 memakai neptu hari, pasaran, bulan Jawa, tanggal Jawa, dan tahun Jawa kedua calon.</p>
+      </article>
+    );
+  }
+
+  return (
+    <article className={`resultCard ${primary ? 'primary' : ''} ${calculation.result.meaning.level}`}>
+      <div className="resultTop">
+        <span>Bagi 3 Betaljemur No.25</span>
+        <strong>Sisa {calculation.result.remainder}</strong>
+      </div>
+      <h3>{calculation.result.meaning.name}</h3>
+      <p>{calculation.result.meaning.description}</p>
+      <p className="resultMeta">
+        Total {calculation.totalNeptu} = laki-laki {calculation.male.totalNeptu} + perempuan{' '}
+        {calculation.female.totalNeptu}.
+      </p>
     </article>
   );
 }
@@ -330,6 +390,16 @@ function formatLevel(level: QualityLevel): string {
   return 'netral';
 }
 
+function formatReasonList(items: readonly { name: string }[], fallback: string): string {
+  if (items.length === 0) return fallback;
+  return items.map((item) => item.name).join(', ');
+}
+
+function formatSlotList(slots: readonly TravelSlot[], fallback = '-'): string {
+  if (slots.length === 0) return fallback;
+  return slots.map((slot) => `${slot.range} · ${slot.name}`).join(', ');
+}
+
 function WayahItem({ period }: { period: WayahPeriod }) {
   return (
     <article className={`warningItem ${period.level}`}>
@@ -411,6 +481,61 @@ function WayahAssessmentPanel({
               <p>Jam ini tidak terkena Surup, Bedhug, Lingsir Wengi, atau Sepi Kirang.</p>
             </article>
           ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TravelDeparturePanel({ assessment }: { assessment: TravelDepartureAssessment }) {
+  return (
+    <section className={`panel travelPanel ${assessment.tibo.level}`}>
+      <div className="panelHeader">
+        <div>
+          <p className="eyebrow">Keberangkatan rombongan</p>
+          <h2>Cek Lelungan No.141, 145, 146</h2>
+        </div>
+        <strong className={`statusBadge ${assessment.tibo.level}`}>{formatLevel(assessment.tibo.level)}</strong>
+      </div>
+
+      <div className="wayahGrid">
+        <div className="calendarSnapshotGrid">
+          <div className="calendarSnapshot">
+            <span>Neptu berangkat</span>
+            <strong>{assessment.neptu}</strong>
+            <p>
+              {assessment.weton.day} {assessment.weton.pasaran}
+            </p>
+          </div>
+          <div className="calendarSnapshot">
+            <span>Arah Kala</span>
+            <strong>{assessment.kalaDirection}</strong>
+            <p>Sebaiknya tidak menuju arah ini saat berangkat jauh.</p>
+          </div>
+        </div>
+
+        <div className="warningList">
+          <article className={`warningItem ${assessment.tibo.level}`}>
+            <div>
+              <span className={`warningPill ${assessment.tibo.level}`}>{assessment.tibo.name}</span>
+              <strong>{assessment.tibo.scope}</strong>
+            </div>
+            <p>{assessment.tibo.description}</p>
+          </article>
+          <article className="warningItem baik">
+            <div>
+              <span className="warningPill baik">No.145</span>
+              <strong>Waktu berangkat baik</strong>
+            </div>
+            <p>{formatSlotList(assessment.slots145, 'Tidak ada slot No.145 pada neptu ini.')}</p>
+          </article>
+          <article className="warningItem baik">
+            <div>
+              <span className="warningPill baik">No.146</span>
+              <strong>Slot siang baik</strong>
+            </div>
+            <p>{formatSlotList(assessment.slots146Day, 'Tidak ada slot siang baik pada neptu ini.')}</p>
+          </article>
         </div>
       </div>
     </section>
@@ -543,15 +668,18 @@ function Petung4ResultTable({ context }: { context: Petung4Context }) {
 function DetailResultCard({
   context,
   calculation,
+  marriageRemainder3,
 }: {
   context: DetailContext;
   calculation: ReturnType<typeof calculatePetung>;
+  marriageRemainder3: BetaljemurMarriageRemainder3Calculation | null;
 }) {
   if (context === 'pasangan9') return <RemainderPairCard result={calculation.coupleResult9} />;
   if (context === 'hariLahir') return <CoupleDayResultCard result={calculation.coupleDayResult} />;
   if (context === 'pasangan8') return <ResultCard result={calculation.coupleResult8} primary label="Pasangan bagi 8" />;
+  if (context === 'bagi3') return <BetaljemurRemainder3Card calculation={marriageRemainder3} primary />;
 
-  const divisor = context === 'bagi5' ? 5 : context === 'bagi7' ? 7 : 3;
+  const divisor = context === 'bagi5' ? 5 : 7;
   const result = calculation.eventResults.find((item) => item.divisor === divisor);
 
   return result ? <ResultCard result={result} primary label={`Hari acara bagi ${divisor}`} /> : null;
@@ -585,16 +713,30 @@ export default function Home() {
   const [eventTime, setEventTime] = useState('10:00');
   const [startDate, setStartDate] = useState(todayIso);
   const [rangeDays, setRangeDays] = useState(120);
+  const [recommendationMode, setRecommendationMode] = useState<EventRecommendationMode>('akadNikah');
   const [petung4Context, setPetung4Context] = useState<Petung4Context>('salakiRabi');
   const [detailContext, setDetailContext] = useState<DetailContext>('bagi5');
 
   const maleWeton = useMemo(() => getActiveWeton(male), [male]);
   const femaleWeton = useMemo(() => getActiveWeton(female), [female]);
   const eventWeton = useMemo(() => getActiveWeton(eventConfig), [eventConfig]);
+  const travelAssessment = useMemo(() => assessTravelDeparture(eventWeton), [eventWeton]);
   const calculation = useMemo(
     () => calculatePetung({ male: maleWeton, female: femaleWeton, event: eventWeton }),
     [maleWeton, femaleWeton, eventWeton],
   );
+  const marriageRemainder3 = useMemo(() => {
+    if (!male.useDate || !female.useDate) return null;
+
+    try {
+      return calculateBetaljemurMarriageRemainder3({
+        maleDate: male.dateStr,
+        femaleDate: female.dateStr,
+      });
+    } catch {
+      return null;
+    }
+  }, [female.dateStr, female.useDate, male.dateStr, male.useDate]);
   const eventAssessment = useMemo(() => {
     if (!eventConfig.useDate) return null;
 
@@ -614,19 +756,20 @@ export default function Home() {
     [eventAssessment?.javanese.day, eventTime, eventWeton.pasaran],
   );
 
-  const recommendations = useMemo(
-    () =>
-      findRecommendedEventDates({
-        male: maleWeton,
-        female: femaleWeton,
+  const recommendations = useMemo(() => {
+    if (!isIsoDateString(startDate)) return [];
+
+    try {
+      return findRecommendedEventDates({
         startDate,
         rangeDays,
-        targetRemainder5: 3,
-        avoidBadDays: true,
+        mode: recommendationMode,
         limit: 12,
-      }),
-    [maleWeton, femaleWeton, rangeDays, startDate],
-  );
+      });
+    } catch {
+      return [];
+    }
+  }, [rangeDays, recommendationMode, startDate]);
 
   const primaryEventResult = calculation.eventResults.find((item) => item.divisor === 5);
   const activePetung4System = PETUNG_4_SYSTEMS[petung4Context];
@@ -664,6 +807,7 @@ export default function Home() {
         <div className="insightStack">
           <BadDayAssessmentPanel assessment={eventAssessment} canAssess={eventConfig.useDate} />
           <WayahAssessmentPanel assessment={wayahAssessment} time={eventTime} onTimeChange={setEventTime} />
+          <TravelDeparturePanel assessment={travelAssessment} />
         </div>
       </section>
 
@@ -696,8 +840,8 @@ export default function Home() {
 
         <section className="resultSection">
           <div>
-            <p className="eyebrow">Acuan hari acara</p>
-            <h2>Hasil utama pembagi 5</h2>
+            <p className="eyebrow">Bacaan tambahan</p>
+            <h2>Pembagi 5 pasangan dan acara</h2>
           </div>
           {primaryEventResult ? <ResultCard result={primaryEventResult} primary /> : null}
         </section>
@@ -748,10 +892,11 @@ export default function Home() {
         <RemainderPairCard result={calculation.coupleResult9} />
         <CoupleDayResultCard result={calculation.coupleDayResult} />
         {calculation.eventResults
-          .filter((item) => item.divisor !== 5)
+          .filter((item) => item.divisor !== 5 && item.divisor !== 3)
           .map((result) => (
             <ResultCard key={result.divisor} result={result} />
           ))}
+        <BetaljemurRemainder3Card calculation={marriageRemainder3} />
       </section>
 
       <section className="panel detailPanel">
@@ -781,7 +926,11 @@ export default function Home() {
 
         <div className="petung4Grid">
           <div>
-            <DetailResultCard context={detailContext} calculation={calculation} />
+            <DetailResultCard
+              context={detailContext}
+              calculation={calculation}
+              marriageRemainder3={marriageRemainder3}
+            />
             <p className="formulaText">
               {detailContext === 'pasangan9'
                 ? 'Dasar: neptu weton laki-laki dan perempuan masing-masing dibagi 9, lalu sisanya dipasangkan.'
@@ -789,7 +938,9 @@ export default function Home() {
                   ? 'Dasar: hari lahir laki-laki dan perempuan dicocokkan menurut tabel suami istri Betaljemur.'
                   : detailContext === 'pasangan8'
                     ? 'Dasar: total neptu pasangan dibagi 8.'
-                    : 'Dasar: total z = neptu pasangan + neptu hari acara dibagi sesuai tabel.'}
+                    : detailContext === 'bagi3'
+                      ? 'Dasar No. 25: jumlah neptu hari, pasaran, bulan Jawa, tanggal Jawa, dan tahun Jawa kedua calon, lalu dibagi 3.'
+                      : 'Dasar: total z = neptu pasangan + neptu hari acara dibagi sesuai tabel.'}
             </p>
           </div>
           <DetailResultTable context={detailContext} />
@@ -800,8 +951,26 @@ export default function Home() {
         <div className="panelHeader">
           <div>
             <p className="eyebrow">Pencari hari baik</p>
-            <h2>Rekomendasi sisa 3 yang bersih pantangan</h2>
+            <h2>Rekomendasi menurut jenis acara</h2>
           </div>
+        </div>
+
+        <div className="segmented recommendationMode" aria-label="Pilih jenis acara rekomendasi">
+          {RECOMMENDATION_MODES.map((mode) => {
+            const isActive = mode.id === recommendationMode;
+
+            return (
+              <button
+                key={mode.id}
+                type="button"
+                className={isActive ? 'active' : ''}
+                aria-pressed={isActive}
+                onClick={() => setRecommendationMode(mode.id)}
+              >
+                {mode.label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="gridTwo compact">
@@ -830,9 +999,11 @@ export default function Home() {
                   <th>Hijriah</th>
                   <th>Tanggal Jawa</th>
                   <th>Weton acara</th>
-                  <th>Neptu acara</th>
-                  <th>Total z</th>
-                  <th>Hasil</th>
+                  <th>Status</th>
+                  <th>Acuan baik</th>
+                  <th>Jam ijab/tarub</th>
+                  <th>Lelungan</th>
+                  <th>Jam berangkat</th>
                   <th>Catatan</th>
                 </tr>
               </thead>
@@ -849,15 +1020,27 @@ export default function Home() {
                     <td>
                       {item.event.day} {item.event.pasaran}
                     </td>
-                    <td>{item.eventNeptu}</td>
-                    <td>{item.totalNeptu}</td>
                     <td>
-                      Sisa {item.result5.remainder} · {item.result5.meaning.name}
+                      <span className={`warningPill ${item.scoreLevel}`}>{formatLevel(item.scoreLevel)}</span>
                     </td>
+                    <td>{formatReasonList(item.reasons, 'Lolos filter kitab')}</td>
+                    <td>
+                      {item.bestSaatIjab
+                        ? `${item.bestSaatIjab.range} · ${item.bestSaatIjab.name}`
+                        : recommendationMode === 'akadNikah' || recommendationMode === 'tarub'
+                          ? 'Belum ada saat Slamet/Rejeki'
+                          : '-'}
+                    </td>
+                    <td>
+                      {item.travel.tibo.name} · hindari {item.travel.kalaDirection}
+                    </td>
+                    <td>{formatSlotList(item.travel.slots145, formatSlotList(item.travel.slots146Day))}</td>
                     <td>
                       {item.badDayWarnings.length > 0
                         ? item.badDayWarnings.map((warning) => warning.name).join(', ')
-                        : 'Bersih dari penanda kurang baik'}
+                        : recommendationMode === 'akadNikah'
+                          ? `Lolos filter No.11-34; ${item.akadDayAdvice ? `hari ke-${item.akadDayAdvice.occurrence}` : 'hari baik'}`
+                          : 'Lolos filter sesuai jenis acara'}
                     </td>
                   </tr>
                 ))}
@@ -865,8 +1048,26 @@ export default function Home() {
             </table>
           </div>
         ) : (
-          <p className="emptyState">Belum ada tanggal sisa 3 yang bersih dari penanda kurang baik pada rentang ini.</p>
+          <p className="emptyState">Belum ada tanggal yang lolos filter kitab pada rentang ini.</p>
         )}
+      </section>
+
+      <section className="panel seoHub">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Panduan petung</p>
+            <h2>Topik yang sering dicari</h2>
+          </div>
+        </div>
+        <div className="seoLinkGrid">
+          {SEO_PAGE_LINKS.map((item) => (
+            <a key={item.href} href={item.href} className="seoLinkCard">
+              <span>{item.eyebrow}</span>
+              <strong>{item.title}</strong>
+              <p>{item.description}</p>
+            </a>
+          ))}
+        </div>
       </section>
 
       <section className="note">

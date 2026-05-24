@@ -10,6 +10,8 @@ import {
   SITE_NAME,
 } from '@/lib/seo';
 import { getSeoPage, SEO_PAGE_LINKS, SEO_PAGES } from '@/lib/seo-pages';
+import { SiteFooter } from '@/components/SiteFooter';
+import { SiteLogo } from '@/components/SiteLogo';
 
 type SeoRouteProps = {
   params: Promise<{ slug: string }>;
@@ -101,7 +103,10 @@ export default async function SeoLandingPage({ params }: SeoRouteProps) {
         </nav>
 
         <header className="seoHero">
-          <p className="eyebrow">{page.eyebrow}</p>
+          <div className="heroBrandLine">
+            <SiteLogo className="heroLogo" compact />
+            <p className="eyebrow">{page.eyebrow}</p>
+          </div>
           <h1>{page.h1}</h1>
           <p>{page.intro}</p>
           <div className="seoKeywordRow" aria-label="Topik halaman">
@@ -164,6 +169,8 @@ export default async function SeoLandingPage({ params }: SeoRouteProps) {
             </section>
           </aside>
         </div>
+
+        <SiteFooter />
       </div>
     </main>
   );

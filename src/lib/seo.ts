@@ -35,6 +35,7 @@ export function buildWebsiteJsonLd() {
     '@type': 'WebSite',
     name: SITE_NAME,
     url: SITE_URL,
+    logo: absoluteUrl('/logo.svg'),
     inLanguage: 'id-ID',
   };
 }
@@ -47,6 +48,7 @@ export function buildWebApplicationJsonLd() {
     applicationCategory: 'LifestyleApplication',
     operatingSystem: 'Web',
     url: SITE_URL,
+    image: absoluteUrl('/logo.svg'),
     inLanguage: 'id-ID',
     description: HOME_DESCRIPTION,
     offers: {

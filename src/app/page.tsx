@@ -43,6 +43,8 @@ import {
   WetonInput,
 } from '@/lib/petung';
 import { SEO_PAGE_LINKS } from '@/lib/seo-pages';
+import { SiteFooter } from '@/components/SiteFooter';
+import { SiteLogo } from '@/components/SiteLogo';
 
 function getLocalIsoDate(date = new Date()): string {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -780,7 +782,10 @@ export default function Home() {
     <main className="page">
       <section className="hero">
         <div>
-          <p className="eyebrow">Preset Tulungagung / Jawa Mataraman</p>
+          <div className="heroBrandLine">
+            <SiteLogo className="heroLogo" compact />
+            <p className="eyebrow">Preset Tulungagung / Jawa Mataraman</p>
+          </div>
           <h1>Petung Hari Lamaran & Pernikahan</h1>
         </div>
         <div className="heroSeal">
@@ -1079,6 +1084,8 @@ export default function Home() {
           lokal tetap bisa berbeda menurut keluarga atau daerah.
         </p>
       </section>
+
+      <SiteFooter />
     </main>
   );
 }

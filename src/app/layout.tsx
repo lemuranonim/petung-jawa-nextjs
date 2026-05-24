@@ -24,6 +24,10 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   category: 'lifestyle',
+  icons: {
+    icon: [{ url: '/logo.svg', type: 'image/svg+xml' }],
+    shortcut: ['/logo.svg'],
+  },
   openGraph: {
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,

@@ -1,0 +1,52 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Logo Petung Jawa</title>
+  <desc id="desc">Seal monogram PJ dengan pola hitungan Jawa dan aksen prada.</desc>
+  <defs>
+    <linearGradient id="base" x1="86" y1="55" x2="440" y2="459" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10262B"/>
+      <stop offset="0.52" stop-color="#243B63"/>
+      <stop offset="1" stop-color="#472234"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="150" y1="94" x2="370" y2="424" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF3CF"/>
+      <stop offset="0.45" stop-color="#D4AA62"/>
+      <stop offset="1" stop-color="#8F652D"/>
+    </linearGradient>
+    <pattern id="lurik" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <path d="M0 0H2V34H0V0Z" fill="#EAD8B2" opacity="0.16"/>
+      <path d="M14 0H15V34H14V0Z" fill="#EAD8B2" opacity="0.09"/>
+    </pattern>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="72" fill="url(#base)"/>
+  <rect x="24" y="24" width="464" height="464" rx="72" fill="url(#lurik)"/>
+  <rect x="42" y="42" width="428" height="428" rx="56" stroke="#EAD8B2" stroke-opacity="0.3" stroke-width="4"/>
+  <circle cx="256" cy="256" r="166" stroke="url(#gold)" stroke-width="16"/>
+  <circle cx="256" cy="256" r="132" stroke="#FFF3CF" stroke-opacity="0.18" stroke-width="2"/>
+  <path d="M256 96L270 126H302L276 145L287 176L256 157L225 176L236 145L210 126H242L256 96Z" fill="url(#gold)"/>
+  <path d="M256 416L242 386H210L236 367L225 336L256 355L287 336L276 367L302 386H270L256 416Z" fill="url(#gold)" opacity="0.86"/>
+  <g stroke="#EAD8B2" stroke-width="7" stroke-linecap="round" opacity="0.9">
+    <path d="M154 145L173 164"/>
+    <path d="M358 145L339 164"/>
+    <path d="M154 367L173 348"/>
+    <path d="M358 367L339 348"/>
+  </g>
+  <g fill="#EAD8B2">
+    <circle cx="256" cy="112" r="6"/>
+    <circle cx="393" cy="196" r="6"/>
+    <circle cx="341" cy="356" r="6"/>
+    <circle cx="171" cy="356" r="6"/>
+    <circle cx="119" cy="196" r="6"/>
+  </g>
+  <g fill="#2E6A4E">
+    <circle cx="192" cy="147" r="5"/>
+    <circle cx="320" cy="147" r="5"/>
+    <circle cx="383" cy="256" r="5"/>
+    <circle cx="320" cy="365" r="5"/>
+    <circle cx="192" cy="365" r="5"/>
+    <circle cx="129" cy="256" r="5"/>
+    <circle cx="256" cy="384" r="5"/>
+  </g>
+  <path d="M190 315C226 307 243 286 243 253C243 220 224 204 190 204H177V315H190ZM194 171C254 171 290 202 290 253C290 304 255 347 194 347H137V171H194Z" fill="url(#gold)"/>
+  <path d="M321 171H374V298C374 334 351 355 315 355C291 355 271 345 259 326L291 300C297 312 305 318 314 318C323 318 329 312 329 298V210H321V171Z" fill="#FFF3CF"/>
+  <path d="M176 382C209 399 303 399 336 382" stroke="#EAD8B2" stroke-opacity="0.7" stroke-width="5" stroke-linecap="round"/>
+</svg>

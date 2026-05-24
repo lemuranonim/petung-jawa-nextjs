@@ -73,6 +73,34 @@ export const PASARAN_NEPTU: Record<PasaranName, number> = {
   Kliwon: 8,
 };
 
+export const BETALJEMUR_SOURCE = 'Kitab Primbon Betaljemur Adammakna';
+
+export const JAVANESE_MONTH_NEPTU: Record<JavaneseMonthName, number> = {
+  Suro: 7,
+  Sapar: 2,
+  Mulud: 3,
+  'Bakda Mulud': 5,
+  'Jumadil Awal': 6,
+  'Jumadil Akhir': 1,
+  Rejeb: 2,
+  Ruwah: 4,
+  Pasa: 5,
+  Sawal: 7,
+  Sela: 1,
+  Besar: 3,
+};
+
+export const JAVANESE_YEAR_NEPTU: Record<JavaneseYearName, number> = {
+  Alip: 1,
+  Ehe: 5,
+  Jimawal: 3,
+  Je: 7,
+  Dal: 4,
+  Be: 2,
+  Wawu: 6,
+  Jimakir: 3,
+};
+
 export type TiboMeaning = {
   name: string;
   level: 'baik' | 'netral' | 'waspada' | 'hindari';
@@ -80,6 +108,30 @@ export type TiboMeaning = {
 };
 
 export type QualityLevel = TiboMeaning['level'];
+
+export type RemainderPairResult = {
+  divisor: 9;
+  maleRemainder: number;
+  femaleRemainder: number;
+  meaning: TiboMeaning;
+  source: string;
+};
+
+export type CoupleDayResult = {
+  maleDay: DayName;
+  femaleDay: DayName;
+  meaning: TiboMeaning;
+  source: string;
+};
+
+export type BetaljemurMonthAdvice = {
+  id: string;
+  name: string;
+  level: QualityLevel;
+  scope: string;
+  description: string;
+  source: string;
+};
 
 export type Petung4Context = 'salakiRabi' | 'lelunganHasil';
 
@@ -171,6 +223,85 @@ export const TIBO_8_COUPLE: Record<number, TiboMeaning> = {
   8: { name: 'Pesthi', level: 'baik', description: 'Baik; rukun, adem, dan langgeng.' },
 };
 
+export const BETALJEMUR_COUPLE_REMAINDER_9: Record<string, TiboMeaning> = {
+  '1-1': { name: 'Saling mencintai', level: 'baik', description: 'Hubungan dinilai baik dan saling menguatkan.' },
+  '1-2': { name: 'Baik', level: 'baik', description: 'Pasangan dinilai cocok menurut sisa 9.' },
+  '1-3': { name: 'Kuat, rejeki jauh', level: 'waspada', description: 'Hubungan kuat, tetapi rezeki perlu diupayakan lebih jauh.' },
+  '1-4': { name: 'Banyak celaka', level: 'hindari', description: 'Wataknya berat dan rawan banyak kesusahan.' },
+  '1-5': { name: 'Bercerai', level: 'hindari', description: 'Rawan berpisah sehingga perlu sangat dipertimbangkan.' },
+  '1-6': { name: 'Sulit penghidupan', level: 'waspada', description: 'Penghidupan rumah tangga dinilai tidak ringan.' },
+  '1-7': { name: 'Banyak musuh', level: 'waspada', description: 'Rawan tekanan dari luar atau pertentangan.' },
+  '1-8': { name: 'Sengsara', level: 'hindari', description: 'Tafsirnya berat untuk ketenteraman rumah tangga.' },
+  '1-9': { name: 'Tempat berlindung', level: 'baik', description: 'Pasangan menjadi sandaran dan tempat pulang.' },
+  '2-2': { name: 'Selamat, rejeki banyak', level: 'baik', description: 'Baik untuk keselamatan dan kelapangan rezeki.' },
+  '2-3': { name: 'Salah satu mendahului', level: 'hindari', description: 'Tafsirnya berat karena rawan kehilangan pasangan.' },
+  '2-4': { name: 'Banyak godaan', level: 'waspada', description: 'Hubungan perlu dijaga dari gangguan dan cobaan.' },
+  '2-5': { name: 'Banyak celaka', level: 'hindari', description: 'Wataknya berat dan rawan banyak kesusahan.' },
+  '2-6': { name: 'Cepat kaya', level: 'baik', description: 'Baik untuk pertumbuhan rezeki keluarga.' },
+  '2-7': { name: 'Anak rawan celaka', level: 'hindari', description: 'Tafsir keturunan dinilai berat dalam pakem ini.' },
+  '2-8': { name: 'Murah rejeki', level: 'baik', description: 'Rezeki dinilai mudah mengalir.' },
+  '2-9': { name: 'Banyak rejeki', level: 'baik', description: 'Baik untuk kelapangan ekonomi keluarga.' },
+  '3-3': { name: 'Melarat', level: 'hindari', description: 'Rawan kesulitan ekonomi.' },
+  '3-4': { name: 'Banyak celaka', level: 'hindari', description: 'Wataknya berat dan rawan banyak kesusahan.' },
+  '3-5': { name: 'Cepat bercerai', level: 'hindari', description: 'Rawan cepat berpisah.' },
+  '3-6': { name: 'Mendapat anugerah', level: 'baik', description: 'Baik karena dianggap membawa pemberian atau berkah.' },
+  '3-7': { name: 'Banyak celaka', level: 'hindari', description: 'Wataknya berat dan rawan banyak kesusahan.' },
+  '3-8': { name: 'Salah satu mendahului', level: 'hindari', description: 'Tafsirnya berat karena rawan kehilangan pasangan.' },
+  '3-9': { name: 'Banyak rejeki', level: 'baik', description: 'Baik untuk kelapangan ekonomi keluarga.' },
+  '4-4': { name: 'Sering sakit', level: 'waspada', description: 'Perlu perhatian pada kesehatan dan ketahanan keluarga.' },
+  '4-5': { name: 'Banyak godaan', level: 'waspada', description: 'Hubungan perlu dijaga dari gangguan dan cobaan.' },
+  '4-6': { name: 'Banyak rejeki', level: 'baik', description: 'Baik untuk kelapangan ekonomi keluarga.' },
+  '4-7': { name: 'Melarat', level: 'hindari', description: 'Rawan kesulitan ekonomi.' },
+  '4-8': { name: 'Banyak rintangan', level: 'waspada', description: 'Perjalanan rumah tangga dinilai banyak hambatan.' },
+  '4-9': { name: 'Salah satu kalah', level: 'waspada', description: 'Rawan ketimpangan atau salah satu pihak sering mengalah.' },
+  '5-5': { name: 'Keberuntungan terus', level: 'baik', description: 'Baik karena dinilai membawa keberuntungan berulang.' },
+  '5-6': { name: 'Murah rejeki', level: 'baik', description: 'Rezeki dinilai mudah mengalir.' },
+  '5-7': { name: 'Pencaharian tetap', level: 'baik', description: 'Mata pencaharian dinilai terus tersedia.' },
+  '5-8': { name: 'Banyak rintangan', level: 'waspada', description: 'Perjalanan rumah tangga dinilai banyak hambatan.' },
+  '5-9': { name: 'Murah rejeki', level: 'baik', description: 'Rezeki dinilai mudah mengalir.' },
+  '6-6': { name: 'Banyak celaka', level: 'hindari', description: 'Wataknya berat dan rawan banyak kesusahan.' },
+  '6-7': { name: 'Rukun tenteram', level: 'baik', description: 'Baik untuk kedamaian rumah tangga.' },
+  '6-8': { name: 'Banyak musuh', level: 'waspada', description: 'Rawan tekanan dari luar atau pertentangan.' },
+  '6-9': { name: 'Sengsara', level: 'hindari', description: 'Tafsirnya berat untuk ketenteraman rumah tangga.' },
+  '7-7': { name: 'Terkukung', level: 'waspada', description: 'Rawan dominasi dalam rumah tangga; perlu saling mengimbangi.' },
+  '7-8': { name: 'Terhalang diri sendiri', level: 'waspada', description: 'Hambatan utama dinilai datang dari sikap atau keputusan sendiri.' },
+  '7-9': { name: 'Perjodohan kekal', level: 'baik', description: 'Baik untuk kelanggengan pasangan.' },
+  '8-8': { name: 'Dicintai orang', level: 'baik', description: 'Dinilai mendapat simpati dan penerimaan dari sekitar.' },
+  '8-9': { name: 'Banyak celaka', level: 'hindari', description: 'Wataknya berat dan rawan banyak kesusahan.' },
+  '9-9': { name: 'Susah rejeki', level: 'hindari', description: 'Rawan kesulitan dalam urusan rezeki.' },
+};
+
+export const BETALJEMUR_DAY_PAIR_RESULTS: Record<string, TiboMeaning> = {
+  'Minggu-Minggu': { name: 'Sering sakit', level: 'waspada', description: 'Perlu perhatian pada kesehatan dan ketahanan keluarga.' },
+  'Minggu-Senin': { name: 'Banyak penyakit', level: 'waspada', description: 'Tafsirnya berat pada sisi kesehatan.' },
+  'Minggu-Selasa': { name: 'Miskin', level: 'hindari', description: 'Rawan kesulitan ekonomi.' },
+  'Minggu-Rabu': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Minggu-Kamis': { name: 'Bertengkar', level: 'waspada', description: 'Rawan perselisihan.' },
+  'Minggu-Jumat': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Minggu-Sabtu': { name: 'Miskin', level: 'hindari', description: 'Rawan kesulitan ekonomi.' },
+  'Senin-Senin': { name: 'Tidak baik', level: 'hindari', description: 'Pasangan hari ini dinilai kurang baik.' },
+  'Senin-Selasa': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Senin-Rabu': { name: 'Anaknya wanita', level: 'netral', description: 'Tafsirnya lebih berupa penanda keturunan daripada pantangan.' },
+  'Senin-Kamis': { name: 'Dicintai orang banyak', level: 'baik', description: 'Baik untuk penerimaan sosial keluarga.' },
+  'Senin-Jumat': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Senin-Sabtu': { name: 'Berekat', level: 'baik', description: 'Selalu cukup meski pendapatan tidak besar.' },
+  'Selasa-Selasa': { name: 'Tidak baik', level: 'hindari', description: 'Pasangan hari ini dinilai kurang baik.' },
+  'Selasa-Rabu': { name: 'Kaya', level: 'baik', description: 'Baik untuk kelapangan harta.' },
+  'Selasa-Kamis': { name: 'Kaya', level: 'baik', description: 'Baik untuk kelapangan harta.' },
+  'Selasa-Jumat': { name: 'Bercerai', level: 'hindari', description: 'Rawan berpisah.' },
+  'Selasa-Sabtu': { name: 'Sering bertengkar', level: 'waspada', description: 'Rawan perselisihan berulang.' },
+  'Rabu-Rabu': { name: 'Tidak baik', level: 'hindari', description: 'Pasangan hari ini dinilai kurang baik.' },
+  'Rabu-Kamis': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Rabu-Jumat': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Rabu-Sabtu': { name: 'Baik', level: 'baik', description: 'Pasangan hari ini dinilai baik.' },
+  'Kamis-Kamis': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Kamis-Jumat': { name: 'Yuwana', level: 'baik', description: 'Selamat dan tetap baik meski ada pembicaraan orang.' },
+  'Kamis-Sabtu': { name: 'Bercerai', level: 'hindari', description: 'Rawan berpisah.' },
+  'Jumat-Jumat': { name: 'Miskin', level: 'hindari', description: 'Rawan kesulitan ekonomi.' },
+  'Jumat-Sabtu': { name: 'Celaka', level: 'hindari', description: 'Tafsirnya berat dan rawan kesusahan.' },
+  'Sabtu-Sabtu': { name: 'Tidak baik', level: 'hindari', description: 'Pasangan hari ini dinilai kurang baik.' },
+};
+
 export type WetonInput = {
   day: DayName;
   pasaran: PasaranName;
@@ -204,6 +335,9 @@ export type EventDateAssessment = {
   date: string;
   weton: WetonInput;
   javanese: JavaneseDateInfo;
+  monthNeptu: number;
+  yearNeptu: number;
+  monthAdvices: BetaljemurMonthAdvice[];
   warnings: BadDayWarning[];
   worstLevel: Exclude<QualityLevel, 'netral'>;
 };
@@ -213,15 +347,17 @@ export type WayahPeriod = {
   name: string;
   level: QualityLevel;
   range: string;
-  source: 'Saat Lima' | 'Sengkala Alam';
+  source: 'Saat Lima' | 'Saat Ijab Betaljemur' | 'Sengkala Alam';
   description: string;
 };
 
 export type WayahAssessment = {
   time: string;
   pasaran: PasaranName;
+  javaneseDay?: number;
   minuteOfDay: number;
   saatLima: WayahPeriod | null;
+  ijab: WayahPeriod | null;
   alam: WayahPeriod[];
   overallLevel: QualityLevel;
 };
@@ -370,20 +506,169 @@ const KALADITE_WUKU = new Set<WukuName>(['Warigagung', 'Kuruwelut', 'Dukut']);
 const SARIKAGUNG_WUKU = new Set<WukuName>(['Kurantil', 'Galungan', 'Marakeh', 'Bala']);
 const DHENDHAN_KUKUDAN_DAYS = new Set<DayName>(['Minggu', 'Senin', 'Selasa']);
 
+const KUNARPAWARSA_RULES: Record<JavaneseYearName, WetonInput> = {
+  Alip: { day: 'Sabtu', pasaran: 'Pahing' },
+  Ehe: { day: 'Kamis', pasaran: 'Pahing' },
+  Jimawal: { day: 'Senin', pasaran: 'Legi' },
+  Je: { day: 'Jumat', pasaran: 'Legi' },
+  Dal: { day: 'Rabu', pasaran: 'Kliwon' },
+  Be: { day: 'Minggu', pasaran: 'Wage' },
+  Wawu: { day: 'Kamis', pasaran: 'Pon' },
+  Jimakir: { day: 'Selasa', pasaran: 'Pon' },
+};
+
+const SANGARWARSA_RULES: Record<JavaneseYearName, WetonInput> = {
+  Alip: { day: 'Jumat', pasaran: 'Legi' },
+  Ehe: { day: 'Selasa', pasaran: 'Kliwon' },
+  Jimawal: { day: 'Minggu', pasaran: 'Kliwon' },
+  Je: { day: 'Kamis', pasaran: 'Wage' },
+  Dal: { day: 'Senin', pasaran: 'Pon' },
+  Be: { day: 'Sabtu', pasaran: 'Legi' },
+  Wawu: { day: 'Rabu', pasaran: 'Pahing' },
+  Jimakir: { day: 'Minggu', pasaran: 'Legi' },
+};
+
+const BETALJEMUR_YEAR_MONTH_RULES: Record<
+  JavaneseYearName,
+  { good: readonly JavaneseMonthName[]; bad: readonly JavaneseMonthName[] }
+> = {
+  Alip: { good: ['Suro'], bad: ['Pasa', 'Sela'] },
+  Ehe: { good: ['Sapar', 'Jumadil Akhir', 'Rejeb', 'Ruwah', 'Sawal'], bad: ['Bakda Mulud', 'Pasa', 'Sela', 'Besar'] },
+  Jimawal: { good: ['Rejeb', 'Ruwah', 'Sawal'], bad: ['Suro', 'Sapar', 'Mulud', 'Jumadil Awal', 'Besar'] },
+  Je: {
+    good: ['Bakda Mulud', 'Jumadil Awal', 'Jumadil Akhir', 'Rejeb', 'Ruwah', 'Pasa', 'Besar'],
+    bad: ['Suro', 'Sapar', 'Mulud', 'Sawal', 'Sela'],
+  },
+  Dal: { good: ['Jumadil Akhir', 'Rejeb', 'Pasa', 'Sawal'], bad: ['Sapar', 'Mulud', 'Ruwah', 'Sela'] },
+  Be: { good: ['Jumadil Akhir', 'Besar'], bad: ['Suro', 'Sapar', 'Rejeb'] },
+  Wawu: { good: ['Sapar', 'Mulud', 'Bakda Mulud', 'Jumadil Awal', 'Pasa'], bad: ['Suro', 'Sawal', 'Sela', 'Besar'] },
+  Jimakir: { good: ['Mulud', 'Jumadil Awal', 'Rejeb', 'Ruwah', 'Sawal', 'Besar'], bad: ['Suro', 'Sela'] },
+};
+
+const PANTANGAN_BULAN_RULES: Record<
+  JavaneseYearName,
+  { months: readonly JavaneseMonthName[]; consequence: string }
+> = {
+  Alip: { months: ['Jumadil Akhir', 'Sela'], consequence: 'rawan sakit atau terkena racun' },
+  Ehe: { months: ['Mulud', 'Pasa'], consequence: 'rawan sakit tulang' },
+  Jimawal: { months: ['Mulud', 'Besar'], consequence: 'rawan musibah air' },
+  Je: { months: ['Suro', 'Sawal'], consequence: 'rawan sakit berat' },
+  Dal: { months: ['Ruwah'], consequence: 'rawan demam atau panas' },
+  Be: { months: ['Sapar', 'Rejeb'], consequence: 'rawan perkara besar' },
+  Wawu: { months: ['Jumadil Awal'], consequence: 'rawan sakit kepala' },
+  Jimakir: { months: ['Suro', 'Sela'], consequence: 'rawan gangguan ingatan' },
+};
+
+const BETALJEMUR_MONTH_CHARACTER: Record<
+  JavaneseMonthName,
+  Omit<BetaljemurMonthAdvice, 'id' | 'scope' | 'source'>
+> = {
+  Suro: {
+    name: 'Watak Bulan Suro',
+    level: 'hindari',
+    description: 'Tidak dianjurkan untuk hajat nikah karena rawan kesukaran dan pertengkaran.',
+  },
+  Sapar: {
+    name: 'Watak Bulan Sapar',
+    level: 'waspada',
+    description: 'Boleh dipakai, tetapi dinilai rawan kekurangan dan banyak utang.',
+  },
+  Mulud: {
+    name: 'Watak Bulan Mulud',
+    level: 'hindari',
+    description: 'Tidak dianjurkan untuk hajat nikah karena tafsirnya berat bagi salah satu pasangan.',
+  },
+  'Bakda Mulud': {
+    name: 'Watak Bulan Bakda Mulud',
+    level: 'waspada',
+    description: 'Boleh dipakai, tetapi rawan menjadi bahan pembicaraan dan celaan.',
+  },
+  'Jumadil Awal': {
+    name: 'Watak Bulan Jumadil Awal',
+    level: 'waspada',
+    description: 'Boleh dipakai, tetapi rawan tertipu, kehilangan, dan banyak lawan.',
+  },
+  'Jumadil Akhir': {
+    name: 'Watak Bulan Jumadil Akhir',
+    level: 'baik',
+    description: 'Baik untuk kelapangan harta benda.',
+  },
+  Rejeb: {
+    name: 'Watak Bulan Rejeb',
+    level: 'baik',
+    description: 'Baik untuk keselamatan dan keturunan.',
+  },
+  Ruwah: {
+    name: 'Watak Bulan Ruwah',
+    level: 'baik',
+    description: 'Baik untuk keselamatan dan kedamaian.',
+  },
+  Pasa: {
+    name: 'Watak Bulan Pasa',
+    level: 'hindari',
+    description: 'Tidak dianjurkan karena tafsirnya rawan celaka besar.',
+  },
+  Sawal: {
+    name: 'Watak Bulan Sawal',
+    level: 'waspada',
+    description: 'Boleh dipakai, tetapi rawan kekurangan dan utang.',
+  },
+  Sela: {
+    name: 'Watak Bulan Sela',
+    level: 'hindari',
+    description: 'Tidak dianjurkan karena rawan sakit dan pertengkaran.',
+  },
+  Besar: {
+    name: 'Watak Bulan Besar',
+    level: 'baik',
+    description: 'Baik untuk kelapangan rezeki dan kebahagiaan.',
+  },
+};
+
+const BETALJEMUR_RAHAYU_DAY_RULES: readonly {
+  months: readonly JavaneseMonthName[];
+  days: readonly DayName[];
+}[] = [
+  { months: ['Besar', 'Suro', 'Sapar'], days: ['Rabu', 'Kamis'] },
+  { months: ['Mulud', 'Bakda Mulud', 'Jumadil Awal'], days: ['Jumat'] },
+  { months: ['Jumadil Akhir', 'Rejeb', 'Ruwah'], days: ['Sabtu', 'Minggu'] },
+  { months: ['Pasa', 'Sawal', 'Sela'], days: ['Senin', 'Selasa'] },
+];
+
+const BETALJEMUR_SARJU_DAY_RULES: readonly {
+  months: readonly JavaneseMonthName[];
+  days: readonly DayName[];
+}[] = [
+  { months: ['Besar', 'Suro', 'Sapar'], days: ['Jumat'] },
+  { months: ['Mulud', 'Bakda Mulud', 'Jumadil Awal'], days: ['Sabtu', 'Minggu'] },
+  { months: ['Jumadil Akhir', 'Rejeb', 'Ruwah'], days: ['Senin', 'Selasa'] },
+  { months: ['Pasa', 'Sawal', 'Sela'], days: ['Rabu', 'Kamis'] },
+];
+
+const KEJADIAN_NABI_DATES: Partial<Record<JavaneseMonthName, { day: number; event: string }>> = {
+  Suro: { day: 13, event: 'peristiwa Nabi Ibrahim' },
+  Mulud: { day: 3, event: 'peristiwa Nabi Adam' },
+  'Bakda Mulud': { day: 16, event: 'peristiwa Nabi Yusuf' },
+  'Jumadil Awal': { day: 5, event: 'peristiwa Nabi Nuh' },
+  Pasa: { day: 21, event: 'peristiwa Nabi Musa' },
+  Sela: { day: 24, event: 'peristiwa Nabi Yunus' },
+  Besar: { day: 25, event: 'peristiwa Nabi Muhammad' },
+};
+
 const SAAT_LIMA_RANGES = [
-  { start: 6 * 60, end: 8 * 60 + 24, label: '06.00 - 08.24' },
-  { start: 8 * 60 + 24, end: 10 * 60 + 48, label: '08.24 - 10.48' },
-  { start: 10 * 60 + 48, end: 13 * 60 + 12, label: '10.48 - 13.12' },
-  { start: 13 * 60 + 12, end: 15 * 60 + 36, label: '13.12 - 15.36' },
-  { start: 15 * 60 + 36, end: 18 * 60, label: '15.36 - 18.00' },
+  { start: 6 * 60, end: 8 * 60 + 24, label: '06.00 - 08.23' },
+  { start: 8 * 60 + 24, end: 10 * 60 + 48, label: '08.24 - 10.47' },
+  { start: 10 * 60 + 48, end: 13 * 60 + 12, label: '10.48 - 13.11' },
+  { start: 13 * 60 + 12, end: 15 * 60 + 36, label: '13.12 - 15.35' },
+  { start: 15 * 60 + 36, end: 18 * 60, label: '15.36 - 17.59' },
 ] as const;
 
 const SAAT_LIMA_BY_PASARAN: Record<PasaranName, readonly string[]> = {
-  Legi: ['Nasehat', 'Rejeki', 'Selamat', 'Pangkalan', 'Pacak Wesi'],
-  Pahing: ['Rejeki', 'Selamat', 'Pangkalan', 'Pacak Wesi', 'Nasehat'],
-  Pon: ['Selamat', 'Pangkalan', 'Pacak Wesi', 'Nasehat', 'Rejeki'],
-  Wage: ['Pangkalan', 'Pacak Wesi', 'Nasehat', 'Selamat', 'Rejeki'],
-  Kliwon: ['Pacak Wesi', 'Nasehat', 'Rejeki', 'Selamat', 'Pangkalan'],
+  Legi: ['Pitutur', 'Rejeki', 'Slamet', 'Pangkalan', 'Pacak Wesi'],
+  Pahing: ['Rejeki', 'Slamet', 'Pangkalan', 'Pacak Wesi', 'Pitutur'],
+  Pon: ['Slamet', 'Pangkalan', 'Pacak Wesi', 'Pitutur', 'Rejeki'],
+  Wage: ['Pangkalan', 'Pacak Wesi', 'Pitutur', 'Rejeki', 'Slamet'],
+  Kliwon: ['Pacak Wesi', 'Pitutur', 'Rejeki', 'Slamet', 'Pangkalan'],
 };
 
 const SAAT_LIMA_MEANINGS: Record<string, Omit<WayahPeriod, 'id' | 'range' | 'source'>> = {
@@ -392,13 +677,13 @@ const SAAT_LIMA_MEANINGS: Record<string, Omit<WayahPeriod, 'id' | 'range' | 'sou
     level: 'baik',
     description: 'Baik untuk berdagang, mencari modal, menagih, membuka usaha, atau menutup transaksi.',
   },
-  Selamat: {
-    name: 'Selamat',
+  Slamet: {
+    name: 'Slamet',
     level: 'baik',
     description: 'Baik untuk akad, lamaran, perjalanan, pindahan, dan urusan yang membutuhkan rahayu.',
   },
-  Nasehat: {
-    name: 'Nasehat',
+  Pitutur: {
+    name: 'Pitutur',
     level: 'baik',
     description: 'Baik untuk diskusi, meminta restu, musyawarah keluarga, belajar, atau berdamai.',
   },
@@ -411,6 +696,42 @@ const SAAT_LIMA_MEANINGS: Record<string, Omit<WayahPeriod, 'id' | 'range' | 'sou
     name: 'Pangkalan',
     level: 'hindari',
     description: 'Wayah kurang baik; rawan hambatan, sengkala, kecelakaan, atau urusan macet.',
+  },
+};
+
+const SAAT_IJAB_DATE_NAMES: readonly (readonly string[])[] = [
+  ['Ahmad', 'Jibrail', 'Ibrahim', 'Yusup', 'Israil'],
+  ['Jibrail', 'Ibrahim', 'Yusup', 'Israil', 'Ahmad'],
+  ['Ibrahim', 'Yusup', 'Israil', 'Ahmad', 'Jibrail'],
+  ['Yusup', 'Israil', 'Ahmad', 'Jibrail', 'Ibrahim'],
+  ['Israil', 'Ahmad', 'Jibrail', 'Ibrahim', 'Yusup'],
+];
+
+const SAAT_IJAB_TIBO_MEANINGS: Record<string, Omit<WayahPeriod, 'id' | 'range' | 'source'>> = {
+  Slamet: {
+    name: 'Slamet',
+    level: 'baik',
+    description: 'Saat terbaik untuk ijab menurut Betaljemur.',
+  },
+  Rejeki: {
+    name: 'Rejeki',
+    level: 'baik',
+    description: 'Saat cukup baik untuk ijab, terutama jika Slamet tidak tersedia.',
+  },
+  Pitutur: {
+    name: 'Pitutur',
+    level: 'hindari',
+    description: 'Untuk ijab dinilai kurang baik; Betaljemur menganjurkan memilih Slamet atau Rejeki.',
+  },
+  'Pacak Wesi': {
+    name: 'Pacak Wesi',
+    level: 'hindari',
+    description: 'Untuk ijab dinilai kurang baik; Betaljemur menganjurkan memilih Slamet atau Rejeki.',
+  },
+  Pangkalan: {
+    name: 'Pangkalan',
+    level: 'hindari',
+    description: 'Untuk ijab dinilai kurang baik dan sebaiknya dihindari.',
   },
 };
 
@@ -476,6 +797,8 @@ export type PetungCalculation = {
   petung4: Record<Petung4Context, PetungResult>;
   eventResults: PetungResult[];
   coupleResult8: PetungResult;
+  coupleResult9: RemainderPairResult;
+  coupleDayResult: CoupleDayResult;
 };
 
 export function wetonNeptu(input: WetonInput): number {
@@ -509,6 +832,37 @@ export function resultFor(total: number, divisor: 3 | 4 | 5 | 7 | 8): PetungResu
   return resultForTable(total, divisor, tables[divisor]);
 }
 
+function remainderPairKey(left: number, right: number): string {
+  return [left, right].sort((a, b) => a - b).join('-');
+}
+
+function dayPairKey(left: DayName, right: DayName): string {
+  return [left, right].sort((a, b) => DAYS.indexOf(a) - DAYS.indexOf(b)).join('-');
+}
+
+export function resultForCoupleRemainder9(maleNeptu: number, femaleNeptu: number): RemainderPairResult {
+  const maleRemainder = normalizeModulo(maleNeptu, 9);
+  const femaleRemainder = normalizeModulo(femaleNeptu, 9);
+  const meaning = BETALJEMUR_COUPLE_REMAINDER_9[remainderPairKey(maleRemainder, femaleRemainder)];
+
+  return {
+    divisor: 9,
+    maleRemainder,
+    femaleRemainder,
+    meaning,
+    source: BETALJEMUR_SOURCE,
+  };
+}
+
+export function resultForCoupleDays(maleDay: DayName, femaleDay: DayName): CoupleDayResult {
+  return {
+    maleDay,
+    femaleDay,
+    meaning: BETALJEMUR_DAY_PAIR_RESULTS[dayPairKey(maleDay, femaleDay)],
+    source: BETALJEMUR_SOURCE,
+  };
+}
+
 export function calculatePetung(params: {
   male: WetonInput;
   female: WetonInput;
@@ -536,6 +890,8 @@ export function calculatePetung(params: {
       resultFor(totalNeptu, 7),
       resultFor(totalNeptu, 3),
     ],
+    coupleResult9: resultForCoupleRemainder9(maleNeptu, femaleNeptu),
+    coupleDayResult: resultForCoupleDays(params.male.day, params.female.day),
   };
 }
 
@@ -737,6 +1093,34 @@ function getSaatLimaPeriod(pasaran: PasaranName, minuteOfDay: number): WayahPeri
   };
 }
 
+function getSaatIjabPeriod(params: {
+  pasaran: PasaranName;
+  javaneseDay?: number;
+  minuteOfDay: number;
+}): WayahPeriod | null {
+  if (!params.javaneseDay) return null;
+
+  const rangeIndex = SAAT_LIMA_RANGES.findIndex((range) =>
+    isMinuteInRange(params.minuteOfDay, range.start, range.end, range.end === 18 * 60),
+  );
+
+  if (rangeIndex < 0) return null;
+
+  const dateGroupIndex = positiveModulo(params.javaneseDay - 1, 5);
+  const dateName = SAAT_IJAB_DATE_NAMES[dateGroupIndex][rangeIndex];
+  const tibo = SAAT_LIMA_BY_PASARAN[params.pasaran][rangeIndex];
+  const meaning = SAAT_IJAB_TIBO_MEANINGS[tibo];
+  const range = SAAT_LIMA_RANGES[rangeIndex];
+
+  return {
+    ...meaning,
+    id: `saat-ijab-${dateName.toLowerCase()}-${tibo.toLowerCase().replace(/\s+/g, '-')}`,
+    name: `${dateName} ${meaning.name}`,
+    range: range.label,
+    source: 'Saat Ijab Betaljemur',
+  };
+}
+
 function getSengkalaAlamPeriods(minuteOfDay: number): WayahPeriod[] {
   return SENGKALA_ALAM_PERIODS.filter((period) => isMinuteInRange(minuteOfDay, period.start, period.end)).map(
     (period) => ({
@@ -757,19 +1141,26 @@ function getWorstQualityLevel(levels: readonly QualityLevel[]): QualityLevel {
   return 'netral';
 }
 
-export function assessWayah(params: { time: string; pasaran: PasaranName }): WayahAssessment {
+export function assessWayah(params: { time: string; pasaran: PasaranName; javaneseDay?: number }): WayahAssessment {
   const minuteOfDay = parseTimeToMinutes(params.time);
   const saatLima = getSaatLimaPeriod(params.pasaran, minuteOfDay);
+  const ijab = getSaatIjabPeriod({
+    pasaran: params.pasaran,
+    javaneseDay: params.javaneseDay,
+    minuteOfDay,
+  });
   const alam = getSengkalaAlamPeriods(minuteOfDay);
-  const levels = [saatLima?.level, ...alam.map((period) => period.level)].filter(
+  const levels = [ijab?.level ?? saatLima?.level, ...alam.map((period) => period.level)].filter(
     (level): level is QualityLevel => Boolean(level),
   );
 
   return {
     time: params.time,
     pasaran: params.pasaran,
+    javaneseDay: params.javaneseDay,
     minuteOfDay,
     saatLima,
+    ijab,
     alam,
     overallLevel: getWorstQualityLevel(levels),
   };
@@ -803,11 +1194,164 @@ function warning(
   };
 }
 
+function monthAdvice(
+  id: string,
+  name: string,
+  level: QualityLevel,
+  scope: string,
+  description: string,
+): BetaljemurMonthAdvice {
+  return {
+    id,
+    name,
+    level,
+    scope,
+    description,
+    source: BETALJEMUR_SOURCE,
+  };
+}
+
+function isWarningAdvice(advice: BetaljemurMonthAdvice): advice is BetaljemurMonthAdvice & {
+  level: BadDayWarning['level'];
+} {
+  return advice.level === 'waspada' || advice.level === 'hindari';
+}
+
+function warningFromAdvice(advice: BetaljemurMonthAdvice): BadDayWarning {
+  return warning(advice.id, advice.name, advice.level as BadDayWarning['level'], advice.scope, advice.description);
+}
+
+function getBetaljemurMonthAdvices(weton: WetonInput, javanese: JavaneseDateInfo): BetaljemurMonthAdvice[] {
+  const advices: BetaljemurMonthAdvice[] = [];
+  const monthCharacter = BETALJEMUR_MONTH_CHARACTER[javanese.month];
+  const scope = `${javanese.month} tahun ${javanese.yearName}`;
+
+  advices.push(
+    monthAdvice(
+      'betaljemur-month-character',
+      monthCharacter.name,
+      monthCharacter.level,
+      javanese.month,
+      monthCharacter.description,
+    ),
+  );
+
+  const yearMonthRule = BETALJEMUR_YEAR_MONTH_RULES[javanese.yearName];
+  if (yearMonthRule.good.includes(javanese.month)) {
+    advices.push(
+      monthAdvice(
+        'betaljemur-good-month',
+        'Bulan Baik Betaljemur',
+        'baik',
+        scope,
+        'Bulan ini termasuk daftar bulan baik untuk hajat nikah menurut tahun Jawa.',
+      ),
+    );
+  }
+
+  if (yearMonthRule.bad.includes(javanese.month)) {
+    advices.push(
+      monthAdvice(
+        'betaljemur-bad-month',
+        'Bulan Tidak Baik Betaljemur',
+        'hindari',
+        scope,
+        'Bulan ini termasuk daftar bulan yang tidak baik untuk hajat nikah menurut tahun Jawa.',
+      ),
+    );
+  }
+
+  const pantangan = PANTANGAN_BULAN_RULES[javanese.yearName];
+  if (pantangan.months.includes(javanese.month)) {
+    advices.push(
+      monthAdvice(
+        'betaljemur-pantangan-bulan',
+        'Pantangan Bulan Betaljemur',
+        'hindari',
+        scope,
+        `Bulan ini dipantangkan dalam tahun ${javanese.yearName}; tafsirnya ${pantangan.consequence}.`,
+      ),
+    );
+  }
+
+  if (BETALJEMUR_RAHAYU_DAY_RULES.some((rule) => rule.months.includes(javanese.month) && rule.days.includes(weton.day))) {
+    advices.push(
+      monthAdvice(
+        'betaljemur-bulan-rahayu',
+        'Bulan Rahayu',
+        'baik',
+        `${weton.day} pada bulan ${javanese.month}`,
+        'Kombinasi hari dan bulan ini termasuk Rahayu untuk mengerjakan keperluan penting.',
+      ),
+    );
+  }
+
+  if (BETALJEMUR_SARJU_DAY_RULES.some((rule) => rule.months.includes(javanese.month) && rule.days.includes(weton.day))) {
+    advices.push(
+      monthAdvice(
+        'betaljemur-bulan-sarju',
+        'Bulan Sarju',
+        'netral',
+        `${weton.day} pada bulan ${javanese.month}`,
+        'Kombinasi hari dan bulan ini termasuk Sarju, yaitu tingkat sedang.',
+      ),
+    );
+  }
+
+  return advices;
+}
+
 export function assessEventDate(date: string): EventDateAssessment {
   const weton = wetonFromIsoDate(date);
   const javanese = javaneseDateFromIsoDate(date);
+  const monthAdvices = getBetaljemurMonthAdvices(weton, javanese);
   const warnings: BadDayWarning[] = [];
   const wetonText = wetonLabel(weton);
+
+  for (const advice of monthAdvices) {
+    if (isWarningAdvice(advice)) {
+      warnings.push(warningFromAdvice(advice));
+    }
+  }
+
+  if (javanese.month === 'Besar' && (javanese.day === 29 || javanese.day === 30)) {
+    const rule = KUNARPAWARSA_RULES[javanese.yearName];
+    warnings.push(
+      warning(
+        'kunarpawarsa',
+        'Kunarpawarsa',
+        'hindari',
+        `${javanese.day} Besar tahun ${javanese.yearName}`,
+        `Tanggal akhir Besar termasuk tahun bencana; pakemnya jatuh pada ${wetonLabel(rule)}.`,
+      ),
+    );
+  }
+
+  if (javanese.month === 'Suro' && javanese.day === 3) {
+    const rule = SANGARWARSA_RULES[javanese.yearName];
+    warnings.push(
+      warning(
+        'sangarwarsa',
+        'Sangarwarsa',
+        'hindari',
+        `3 Suro tahun ${javanese.yearName}`,
+        `Tiga hari setelah tahun baru Jawa termasuk hari sangar; pakemnya jatuh pada ${wetonLabel(rule)}.`,
+      ),
+    );
+  }
+
+  const nabiDate = KEJADIAN_NABI_DATES[javanese.month];
+  if (nabiDate?.day === javanese.day) {
+    warnings.push(
+      warning(
+        'kejadian-nabi',
+        'Kejadian Nabi',
+        'waspada',
+        `${javanese.day} ${javanese.month}`,
+        `Tanggal ini masuk daftar peristiwa ${nabiDate.event} yang dihindari untuk hajat nikah.`,
+      ),
+    );
+  }
 
   if (includesCurrentJavaneseDate(SANGARE_TANGGAL, javanese)) {
     warnings.push(
@@ -987,6 +1531,9 @@ export function assessEventDate(date: string): EventDateAssessment {
     date,
     weton,
     javanese,
+    monthNeptu: JAVANESE_MONTH_NEPTU[javanese.month],
+    yearNeptu: JAVANESE_YEAR_NEPTU[javanese.yearName],
+    monthAdvices,
     warnings,
     worstLevel,
   };

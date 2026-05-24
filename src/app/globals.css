@@ -508,6 +508,14 @@ button {
   gap: 10px;
 }
 
+.listLabel {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
 .warningItem {
   padding: 13px;
   border: 1px solid var(--line);

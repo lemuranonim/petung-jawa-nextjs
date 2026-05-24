@@ -6,21 +6,26 @@ Starter web app untuk menghitung neptu, weton pasangan, dan hari acara seperti l
 
 - Input weton laki-laki dan perempuan.
 - Input hari acara manual atau otomatis dari tanggal Masehi.
-- Input jam acara untuk membaca wayah menurut Saat Lima dan Sengkala Alam.
+- Input jam acara untuk membaca wayah menurut Saat Ijab Betaljemur dan Sengkala Alam.
 - Tampilkan tanggal acara dalam 3 kalender: Masehi, Hijriah, dan Jawa.
+- Tampilkan neptu bulan dan tahun Jawa sesuai acuan `Kitab Primbon Betaljemur Adammakna`.
 - Hitung rumus `z = neptu laki-laki + neptu perempuan + neptu hari acara`.
 - Tampilkan hasil pembagi 5, 7, dan 3 untuk hari acara.
 - Cek tanggal acara terhadap tanggal Jawa, wuku, dan daftar dina/tanggal kurang baik:
   - Sangare Tanggal, Bangas Padewan, Naasing Tanggal.
   - Taliwangke bulanan dan Taliwangke berbasis wuku.
   - Samparwangke, Dino Olo, Sangaring Sasi, Suwung Anggara Kasih, Dina Ala, Kaladite, Sarikagung, dan Dhendhan Kukudan.
+  - Kunarpa Warsa, Sangar Warsa, Kejadian Nabi, bulan baik/tidak baik, dan Pantangan Bulan dari Betaljemur.
 - Cek wayah acara:
-  - Saat Lima berdasarkan pasaran: Rejeki, Selamat, Nasehat, Pacak Wesi, dan Pangkalan.
+  - Saat Ijab Betaljemur berdasarkan tanggal Jawa, pasaran, dan jam: Slamet, Rejeki, Pitutur, Pacak Wesi, dan Pangkalan.
   - Sengkala Alam: Surup/Sandekala, Bedhug/Tengah Hari, Lingsir Wengi, dan Sepi Kirang.
 - Pisahkan pembagi 4 sesuai konteks:
   - Salaki Rabi / jodoh: Gentho, Gembili, Sri, Punggel.
   - Hari / lelungan / golek hasil: Kliyeg atau Riyeg, Mentheg atau Menthek, Jotho, Kemil.
 - Cek pasangan pembagi 8: Pegat, Ratu, Jodoh, Topo, Tinari, Padu, Sujanan, Pesthi.
+- Cek pasangan pembagi 9 Betaljemur berdasarkan sisa neptu laki-laki dan perempuan.
+- Cek kecocokan hari lahir pasangan berdasarkan tabel hari suami istri Betaljemur.
+- Panel detail tabel lengkap untuk pembagi 3, 5, 7, 8, 9, dan hari lahir pasangan.
 - Rekomendasi tanggal acara yang jatuh pada sisa 3 pembagi 5 dan bersih dari penanda kurang baik.
 
 ## Menjalankan project

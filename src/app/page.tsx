@@ -5,7 +5,12 @@ import {
   assessEventDate,
   assessWayah,
   BadDayWarning,
+  BETALJEMUR_COUPLE_REMAINDER_9,
+  BETALJEMUR_DAY_PAIR_RESULTS,
+  BETALJEMUR_SOURCE,
+  BetaljemurMonthAdvice,
   calculatePetung,
+  CoupleDayResult,
   DAY_NEPTU,
   DAYS,
   DayName,
@@ -20,6 +25,12 @@ import {
   Petung4Context,
   PetungResult,
   QualityLevel,
+  RemainderPairResult,
+  TIBO_3,
+  TIBO_5_EVENT,
+  TIBO_7,
+  TIBO_8_COUPLE,
+  TiboMeaning,
   WayahAssessment,
   WayahPeriod,
   wetonFromIsoDate,
@@ -65,6 +76,17 @@ export type WetonConfig = {
   dateStr: string;
   manual: WetonInput;
 };
+
+type DetailContext = 'bagi5' | 'bagi7' | 'bagi3' | 'pasangan8' | 'pasangan9' | 'hariLahir';
+
+const DETAIL_CONTEXTS: readonly { id: DetailContext; label: string }[] = [
+  { id: 'bagi5', label: 'Bagi 5' },
+  { id: 'bagi7', label: 'Bagi 7' },
+  { id: 'bagi3', label: 'Bagi 3' },
+  { id: 'pasangan8', label: 'Pasangan 8' },
+  { id: 'pasangan9', label: 'Pasangan 9' },
+  { id: 'hariLahir', label: 'Hari Lahir' },
+];
 
 export function getActiveWeton(config: WetonConfig): WetonInput {
   if (!config.useDate) return config.manual;
@@ -157,6 +179,113 @@ function ResultCard({
   );
 }
 
+function RemainderPairCard({ result }: { result: RemainderPairResult }) {
+  return (
+    <article className={`resultCard ${result.meaning.level}`}>
+      <div className="resultTop">
+        <span>Sisa 9 pasangan</span>
+        <strong>
+          {result.maleRemainder} & {result.femaleRemainder}
+        </strong>
+      </div>
+      <h3>{result.meaning.name}</h3>
+      <p>{result.meaning.description}</p>
+    </article>
+  );
+}
+
+function CoupleDayResultCard({ result }: { result: CoupleDayResult }) {
+  return (
+    <article className={`resultCard ${result.meaning.level}`}>
+      <div className="resultTop">
+        <span>Hari lahir pasangan</span>
+        <strong>
+          {result.maleDay} & {result.femaleDay}
+        </strong>
+      </div>
+      <h3>{result.meaning.name}</h3>
+      <p>{result.meaning.description}</p>
+    </article>
+  );
+}
+
+function TiboResultTable({ table }: { table: Record<number, TiboMeaning> }) {
+  return (
+    <div className="tableWrap compactTable">
+      <table>
+        <thead>
+          <tr>
+            <th>Sisa</th>
+            <th>Tibo</th>
+            <th>Makna</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(table)
+            .sort(([left], [right]) => Number(left) - Number(right))
+            .map(([remainder, meaning]) => (
+              <tr key={remainder}>
+                <td>{remainder}</td>
+                <td>{meaning.name}</td>
+                <td>{meaning.description}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Remainder9ResultTable() {
+  return (
+    <div className="tableWrap compactTable">
+      <table>
+        <thead>
+          <tr>
+            <th>Sisa</th>
+            <th>Tibo</th>
+            <th>Makna</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(BETALJEMUR_COUPLE_REMAINDER_9).map(([remainders, meaning]) => (
+            <tr key={remainders}>
+              <td>{remainders.replace('-', ' & ')}</td>
+              <td>{meaning.name}</td>
+              <td>{meaning.description}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CoupleDayResultTable() {
+  return (
+    <div className="tableWrap compactTable">
+      <table>
+        <thead>
+          <tr>
+            <th>Hari</th>
+            <th>Tibo</th>
+            <th>Makna</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(BETALJEMUR_DAY_PAIR_RESULTS).map(([days, meaning]) => (
+            <tr key={days}>
+              <td>{days.replace('-', ' & ')}</td>
+              <td>{meaning.name}</td>
+              <td>{meaning.description}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function formatJavaneseDate(assessment: EventDateAssessment): string {
   const { javanese } = assessment;
   return `${javanese.day} ${javanese.month} ${javanese.year} ${javanese.yearName}`;
@@ -176,6 +305,18 @@ function formatMasehiDate(date: string): string {
 
 function WarningPill({ warning }: { warning: BadDayWarning }) {
   return <span className={`warningPill ${warning.level}`}>{warning.name}</span>;
+}
+
+function MonthAdviceItem({ advice }: { advice: BetaljemurMonthAdvice }) {
+  return (
+    <article className={`warningItem ${advice.level}`}>
+      <div>
+        <span className={`warningPill ${advice.level}`}>{advice.name}</span>
+        <strong>{advice.scope}</strong>
+      </div>
+      <p>{advice.description}</p>
+    </article>
+  );
 }
 
 function WayahPill({ period }: { period: WayahPeriod }) {
@@ -217,7 +358,7 @@ function WayahAssessmentPanel({
       <div className="panelHeader">
         <div>
           <p className="eyebrow">Wayah acara</p>
-          <h2>Cek Saat Lima & Sengkala Alam</h2>
+          <h2>Cek Saat Ijab & Sengkala Alam</h2>
         </div>
         <strong className={`statusBadge ${assessment.overallLevel}`}>{formatLevel(assessment.overallLevel)}</strong>
       </div>
@@ -231,20 +372,29 @@ function WayahAssessmentPanel({
           <div className="calendarSnapshot">
             <span>Pasaran</span>
             <strong>{assessment.pasaran}</strong>
-            <p>Dasar urutan Saat Lima</p>
+            <p>Dasar pekan ijab Betaljemur</p>
           </div>
+          {assessment.javaneseDay ? (
+            <div className="calendarSnapshot">
+              <span>Tanggal Jawa</span>
+              <strong>{assessment.javaneseDay}</strong>
+              <p>Dasar urutan tanggal ijab</p>
+            </div>
+          ) : null}
         </div>
 
         <div className="warningList">
-          {assessment.saatLima ? (
+          {assessment.ijab ? (
+            <WayahItem period={assessment.ijab} />
+          ) : assessment.saatLima ? (
             <WayahItem period={assessment.saatLima} />
           ) : (
             <article className="warningItem netral">
               <div>
-                <span className="warningPill netral">di luar Saat Lima</span>
+                <span className="warningPill netral">di luar Saat Ijab</span>
                 <strong>18.00 - 06.00</strong>
               </div>
-              <p>Malam hari tidak memakai siklus Saat Lima; ceknya mengikuti Sengkala Alam.</p>
+              <p>Malam hari tidak memakai siklus Saat Ijab Betaljemur; ceknya mengikuti Sengkala Alam.</p>
             </article>
           )}
 
@@ -274,6 +424,9 @@ function BadDayAssessmentPanel({
   assessment: EventDateAssessment | null;
   canAssess: boolean;
 }) {
+  const supportingMonthAdvices =
+    assessment?.monthAdvices.filter((advice) => advice.level === 'baik' || advice.level === 'netral') ?? [];
+
   return (
     <section className={`panel badDayPanel ${assessment?.worstLevel ?? 'netral'}`}>
       <div className="panelHeader">
@@ -310,6 +463,13 @@ function BadDayAssessmentPanel({
               <strong>{formatJavaneseDate(assessment)}</strong>
               <p>Wuku {assessment.javanese.wuku}</p>
             </div>
+            <div className="calendarSnapshot">
+              <span>Neptu Betaljemur</span>
+              <strong>
+                Bulan {assessment.monthNeptu} · Tahun {assessment.yearNeptu}
+              </strong>
+              <p>{BETALJEMUR_SOURCE}</p>
+            </div>
           </div>
 
           <div className="warningList">
@@ -335,6 +495,15 @@ function BadDayAssessmentPanel({
                 </p>
               </article>
             )}
+
+            {supportingMonthAdvices.length > 0 ? (
+              <>
+                <p className="listLabel">Acuan bulan dari Betaljemur</p>
+                {supportingMonthAdvices.map((advice, index) => (
+                  <MonthAdviceItem key={`${advice.id}-${index}`} advice={advice} />
+                ))}
+              </>
+            ) : null}
           </div>
         </div>
       ) : (
@@ -371,6 +540,32 @@ function Petung4ResultTable({ context }: { context: Petung4Context }) {
   );
 }
 
+function DetailResultCard({
+  context,
+  calculation,
+}: {
+  context: DetailContext;
+  calculation: ReturnType<typeof calculatePetung>;
+}) {
+  if (context === 'pasangan9') return <RemainderPairCard result={calculation.coupleResult9} />;
+  if (context === 'hariLahir') return <CoupleDayResultCard result={calculation.coupleDayResult} />;
+  if (context === 'pasangan8') return <ResultCard result={calculation.coupleResult8} primary label="Pasangan bagi 8" />;
+
+  const divisor = context === 'bagi5' ? 5 : context === 'bagi7' ? 7 : 3;
+  const result = calculation.eventResults.find((item) => item.divisor === divisor);
+
+  return result ? <ResultCard result={result} primary label={`Hari acara bagi ${divisor}`} /> : null;
+}
+
+function DetailResultTable({ context }: { context: DetailContext }) {
+  if (context === 'bagi5') return <TiboResultTable table={TIBO_5_EVENT} />;
+  if (context === 'bagi7') return <TiboResultTable table={TIBO_7} />;
+  if (context === 'bagi3') return <TiboResultTable table={TIBO_3} />;
+  if (context === 'pasangan8') return <TiboResultTable table={TIBO_8_COUPLE} />;
+  if (context === 'pasangan9') return <Remainder9ResultTable />;
+  return <CoupleDayResultTable />;
+}
+
 export default function Home() {
   const [male, setMale] = useState<WetonConfig>({
     useDate: true,
@@ -391,15 +586,11 @@ export default function Home() {
   const [startDate, setStartDate] = useState(todayIso);
   const [rangeDays, setRangeDays] = useState(120);
   const [petung4Context, setPetung4Context] = useState<Petung4Context>('salakiRabi');
+  const [detailContext, setDetailContext] = useState<DetailContext>('bagi5');
 
   const maleWeton = useMemo(() => getActiveWeton(male), [male]);
   const femaleWeton = useMemo(() => getActiveWeton(female), [female]);
   const eventWeton = useMemo(() => getActiveWeton(eventConfig), [eventConfig]);
-  const wayahAssessment = useMemo(
-    () => assessWayah({ time: eventTime, pasaran: eventWeton.pasaran }),
-    [eventTime, eventWeton.pasaran],
-  );
-
   const calculation = useMemo(
     () => calculatePetung({ male: maleWeton, female: femaleWeton, event: eventWeton }),
     [maleWeton, femaleWeton, eventWeton],
@@ -413,6 +604,15 @@ export default function Home() {
       return null;
     }
   }, [eventConfig.dateStr, eventConfig.useDate]);
+  const wayahAssessment = useMemo(
+    () =>
+      assessWayah({
+        time: eventTime,
+        pasaran: eventWeton.pasaran,
+        javaneseDay: eventAssessment?.javanese.day,
+      }),
+    [eventAssessment?.javanese.day, eventTime, eventWeton.pasaran],
+  );
 
   const recommendations = useMemo(
     () =>
@@ -545,11 +745,55 @@ export default function Home() {
 
       <section className="cardsGrid">
         <ResultCard result={calculation.coupleResult8} primary label="Pasangan bagi 8" />
+        <RemainderPairCard result={calculation.coupleResult9} />
+        <CoupleDayResultCard result={calculation.coupleDayResult} />
         {calculation.eventResults
           .filter((item) => item.divisor !== 5)
           .map((result) => (
             <ResultCard key={result.divisor} result={result} />
           ))}
+      </section>
+
+      <section className="panel detailPanel">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Detail pembagian lain</p>
+            <h2>Tabel tibo lengkap</h2>
+          </div>
+          <div className="segmented" aria-label="Pilih detail pembagian">
+            {DETAIL_CONTEXTS.map((context) => {
+              const isActive = context.id === detailContext;
+
+              return (
+                <button
+                  key={context.id}
+                  type="button"
+                  className={isActive ? 'active' : ''}
+                  aria-pressed={isActive}
+                  onClick={() => setDetailContext(context.id)}
+                >
+                  {context.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="petung4Grid">
+          <div>
+            <DetailResultCard context={detailContext} calculation={calculation} />
+            <p className="formulaText">
+              {detailContext === 'pasangan9'
+                ? 'Dasar: neptu weton laki-laki dan perempuan masing-masing dibagi 9, lalu sisanya dipasangkan.'
+                : detailContext === 'hariLahir'
+                  ? 'Dasar: hari lahir laki-laki dan perempuan dicocokkan menurut tabel suami istri Betaljemur.'
+                  : detailContext === 'pasangan8'
+                    ? 'Dasar: total neptu pasangan dibagi 8.'
+                    : 'Dasar: total z = neptu pasangan + neptu hari acara dibagi sesuai tabel.'}
+            </p>
+          </div>
+          <DetailResultTable context={detailContext} />
+        </div>
       </section>
 
       <section className="panel recommendationPanel">
@@ -628,10 +872,10 @@ export default function Home() {
       <section className="note">
         <h2>Catatan pakem</h2>
         <p>
-          Pembagi 4 jodoh memakai Gentho, Gembili, Sri, Punggel dari neptu pasangan. Pembagi 4 hari,
-          lelungan, atau golek hasil memakai Kliyeg/Riyeg, Mentheg/Menthek, Jotho, Kemil dari neptu hari.
-          Pantangan tanggal memakai tanggal Jawa Kurup Asapon dan dapat berbeda menurut pakem keluarga atau
-          daerah.
+          Acuan utama kini memakai {BETALJEMUR_SOURCE}: neptu hari, pasaran, bulan, tahun, pembagi 4
+          salaki rabi, pembagi 9 pasangan, hari lahir pasangan, bulan baik/tidak baik, Kunarpa/Sangarwarsa,
+          Anggarakasih, Taliwangke, Samparwangke, tanggal sangar, Bangas Padewan, dan tanggal naas. Pakem
+          lokal tetap bisa berbeda menurut keluarga atau daerah.
         </p>
       </section>
     </main>
